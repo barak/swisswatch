@@ -1,3 +1,17 @@
+swisswatch (0.6-7) unstable; urgency=low
+
+  * Release on alpha and i386 architechtures
+
+ -- Justin Maurer <justin@debian.org>  Fri, 25 Dec 1998 21:25:43 -0500
+
+swisswatch (0.6-6) unstable; urgency=low
+
+  * Comply with newer stadards version
+  * Change permissions on man page to 0644 (form 0444)
+  * Get rid of non-existent upstream changelog
+
+ -- Justin Maurer <justin@debian.org>  Thu, 24 Dec 1998 15:54:11 -0500
+
 swisswatch (0.6-5) unstable; urgency=low
 
   * New maintainer

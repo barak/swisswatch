@@ -2,7 +2,7 @@ Source: swisswatch
 Section: x11
 Priority: optional
 Maintainer:  Justin Maurer <justin@debian.org>
-Standards-Version: 2.1.3.2
+Standards-Version: 2.5.0.0
 
 Package: swisswatch
 Architecture: any

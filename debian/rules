@@ -70,6 +70,8 @@ binary-arch: checkroot
 	$(INSTALL_DIR) debian/tmp/usr/X11R6/man/man1
 	$(INSTALL_MAN)	swisswatch.man \
 	  debian/tmp/usr/X11R6/man/man1/swisswatch.1
+	chmod 0644 debian/tmp/usr/X11R6/man/man1/swisswatch.1 # kludgy
+							      # FIXME
 	-gzip -9fr debian/tmp/usr/X11R6/man
 # documentation
 	$(INSTALL_DIR) debian/tmp/usr/doc/${srcname}
@@ -77,11 +79,6 @@ binary-arch: checkroot
 	$(INSTALL_DATA) debian/changelog \
 	  debian/tmp/usr/doc/${srcname}/changelog.Debian
 	gzip -9 debian/tmp/usr/doc/${srcname}/changelog.Debian
-#
-	$(INSTALL_DATA) README debian/tmp/usr/doc/${srcname}
-	$(INSTALL_DATA) ChangeLog \
-	  debian/tmp/usr/doc/${srcname}/changelog.upstream
-	gzip -9 debian/tmp/usr/doc/${srcname}/changelog.upstream
 #
 	dpkg-shlibdeps debian/tmp/usr/X11R6/bin/swisswatch
 	dpkg-gencontrol  -isp -p${srcname} -Pdebian/tmp
