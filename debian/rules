@@ -1,12 +1,26 @@
-#! /usr/bin/make -f
-#
+#!/usr/bin/make -f
+# debian/rules file - for swisswatch
+# Copyright 1998 by Rob Browning
 
-CC =gcc
-CFLAGS =-O2 -g -Wall -DSHAPE
-LDFLAGS =
+SHELL  := /bin/bash
+CC     := gcc
+CFLAGS := -O2 -g -Wall -DSHAPE
 
-SHELL =/bin/sh
-srcdir =.
+pwd      := $(shell pwd)
+
+srcname  := $(shell dpkg-parsechangelog | grep Source:)
+srcname  := $(shell echo ${srcname} | perl -pe 's/^Source:\s+//o')
+
+version  := $(shell dpkg-parsechangelog | grep Version:)
+version  := $(shell echo ${version} | perl -pe 's/^Version:\s+//o')
+upstream := $(shell echo ${version} | perl -pe 's/-[^-]*$$//o')
+deb_rev  := $(shell echo ${version} | perl -pe 's/.*-//o')
+
+# the architecture of the package
+arch      := $(shell dpkg --print-architecture)
+
+# The Debian target name of the package
+target    := ${arch}-debian-linux-gnu
 
 INSTALL =/usr/bin/install
 INSTALL_DIR =$(INSTALL) -d -m 755 -o root -g root
@@ -14,21 +28,21 @@ INSTALL_PROGRAM =$(INSTALL) -s -m 755 -o root -g root
 INSTALL_DATA =$(INSTALL) -m 644 -o root -g root
 INSTALL_MAN =$(INSTALL) -m 444 -o root -g root
 
-config:
-	$(checkdir)
-	touch stamp-config
+check-auto-parse:
+	@echo "     srcname:" ${srcname}
+	@echo "     version:" ${version}
+	@echo "    upstream:" ${upstream}
+	@echo "     deb_rev:" ${deb_rev}
 
 build:
 	$(checkdir)
-	test -f stamp-config || make -f debian/rules config
 	make -f Makefile.simple CC="$(CC)" CFLAGS="$(CFLAGS)"
 	touch stamp-build
 
 clean:
 	$(checkdir)
-	test -f stamp-config || make -f debian/rules config
 	make -f Makefile.simple clean
-	-rm -f stamp-config stamp-build
+	-rm -f stamp-build
 	-rm -rf debian/tmp* debian/files debian/substvars debian/*~
 
 binary-indep: checkroot
@@ -45,7 +59,7 @@ binary-arch: checkroot
 	$(INSTALL_DIR) debian/tmp/DEBIAN
 # binaries
 	$(INSTALL_DIR) debian/tmp/usr/X11R6/bin
-	$(INSTALL_PROGRAM) -s swisswatch debian/tmp/usr/X11R6/bin
+	$(INSTALL_PROGRAM) swisswatch debian/tmp/usr/X11R6/bin
 # app-defaults
 	$(INSTALL_DIR) debian/tmp/usr/X11R6/lib/X11/app-defaults
 	$(INSTALL_DATA) SWatch.ad \
@@ -58,19 +72,19 @@ binary-arch: checkroot
 	  debian/tmp/usr/X11R6/man/man1/swisswatch.1
 	-gzip -9fr debian/tmp/usr/X11R6/man
 # documentation
-	$(INSTALL_DIR) debian/tmp/usr/doc/swisswatch
-	$(INSTALL_DATA) debian/copyright debian/tmp/usr/doc/swisswatch
+	$(INSTALL_DIR) debian/tmp/usr/doc/${srcname}
+	$(INSTALL_DATA) debian/copyright debian/tmp/usr/doc/${srcname}
 	$(INSTALL_DATA) debian/changelog \
-	  debian/tmp/usr/doc/swisswatch/changelog.Debian
-	gzip -9 debian/tmp/usr/doc/swisswatch/changelog.Debian
+	  debian/tmp/usr/doc/${srcname}/changelog.Debian
+	gzip -9 debian/tmp/usr/doc/${srcname}/changelog.Debian
 #
-	$(INSTALL_DATA) README debian/tmp/usr/doc/swisswatch
+	$(INSTALL_DATA) README debian/tmp/usr/doc/${srcname}
 	$(INSTALL_DATA) ChangeLog \
-	  debian/tmp/usr/doc/swisswatch/changelog.upstream
-	gzip -9 debian/tmp/usr/doc/swisswatch/changelog.upstream
+	  debian/tmp/usr/doc/${srcname}/changelog.upstream
+	gzip -9 debian/tmp/usr/doc/${srcname}/changelog.upstream
 #
-	dpkg-shlibdeps swisswatch
-	dpkg-gencontrol  -isp -pswisswatch -Pdebian/tmp
+	dpkg-shlibdeps debian/tmp/usr/X11R6/bin/swisswatch
+	dpkg-gencontrol  -isp -p${srcname} -Pdebian/tmp
 	dpkg --build debian/tmp ..
 
 define checkdir
@@ -83,4 +97,9 @@ checkroot:
 	$(checkdir)
 	test root = "`whoami`"
 
-.PHONY: config build clean binary binary-arch binary-indep
+.PHONY: build clean binary binary-arch binary-indep
+
+# Local variables:
+# mode: makefile
+# tab-width: 2
+# End:

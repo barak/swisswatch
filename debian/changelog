@@ -1,3 +1,15 @@
+swisswatch (0.6-5) unstable; urgency=low
+
+  * New maintainer
+
+ -- Justin Maurer <justin@debian.org>  Mon, 10 Aug 1998 03:18:01 -0400
+
+swisswatch (0.6-4) unstable; urgency=low
+
+  * debian/* cleanups
+
+ -- Rob Browning <rlb@cs.utexas.edu>  Tue, 30 Jun 1998 20:18:20 -0500
+
 swisswatch (0.6-3) unstable; urgency=low
 
   * New maintainer
