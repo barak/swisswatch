@@ -8,11 +8,11 @@
 ##############################################################################
 ## Edit and uncomment this line if you don't have the X11 include
 ## files under /usr/include/X11
-# INCLUDES = -I/usr/X11R5/include
+INCLUDES = -I/usr/X11R6/include
 
 ## Edit and uncomment this line if you don't have the X11 libraries
 ## installed in the linker's standard search path
-# XLIBDIR = -L/usr/X11R5/lib
+XLIBDIR = -L/usr/X11R6/lib
 
 ## Desired optimization/debugging options for the compiler
 CDEBUGFLAGS = -O

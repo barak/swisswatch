@@ -1,0 +1,85 @@
+#! /usr/bin/make -f
+#
+
+CC =gcc
+CFLAGS =-O2 -g -Wall -DSHAPE
+LDFLAGS =
+
+SHELL =/bin/sh
+srcdir =.
+
+INSTALL =/usr/bin/install
+INSTALL_DIR =$(INSTALL) -d -m 755 -o root -g root
+INSTALL_PROGRAM =$(INSTALL) -m 755 -o root -g root
+INSTALL_DATA =$(INSTALL) -m 644 -o root -g root
+INSTALL_MAN =$(INSTALL) -m 444 -o root -g root
+
+config:
+	$(checkdir)
+	touch stamp-config
+
+build:
+	$(checkdir)
+	test -f stamp-config || make -f debian/rules config
+	make -f Makefile.simple CC="$(CC)" CFLAGS="$(CFLAGS)"
+	touch stamp-build
+
+clean:
+	$(checkdir)
+	test -f stamp-config || make -f debian/rules config
+	make -f Makefile.simple clean
+	-rm -f stamp-config stamp-build
+	-rm -rf debian/tmp* debian/files debian/substvars
+
+binary-indep: checkroot
+	$(checkdir)
+
+binary-arch: checkroot
+	$(checkdir)
+	-rm -rf debian/tmp*
+	test -f stamp-build || make -f debian/rules build
+#
+#
+# debian/tmp
+	$(INSTALL_DIR) debian/tmp
+	$(INSTALL_DIR) debian/tmp/DEBIAN
+	$(INSTALL_DATA) debian/conffiles debian/tmp/DEBIAN
+# binaries
+	$(INSTALL_DIR) debian/tmp/usr/X11R6/bin
+	$(INSTALL_PROGRAM) -s swisswatch debian/tmp/usr/X11R6/bin
+# app-defaults
+	$(INSTALL_DIR) debian/tmp/usr/X11R6/lib/X11/app-defaults
+	$(INSTALL_DATA) SWatch.ad \
+	  debian/tmp/usr/X11R6/lib/X11/app-defaults/SwissWatch
+	$(INSTALL_DATA) SWatch-co.ad \
+	  debian/tmp/usr/X11R6/lib/X11/app-defaults/SwissWatch-color
+# man pages
+	$(INSTALL_DIR) debian/tmp/usr/X11R6/man/man1
+	$(INSTALL_MAN)	swisswatch.man \
+	  debian/tmp/usr/X11R6/man/man1/swisswatch.1
+	-gzip -9fr debian/tmp/usr/X11R6/man
+# documentation
+	$(INSTALL_DIR) debian/tmp/usr/doc/swisswatch
+	$(INSTALL_DATA) debian/copyright debian/tmp/usr/doc/swisswatch
+	$(INSTALL_DATA) debian/changelog \
+	  debian/tmp/usr/doc/swisswatch/changelog.Debian
+	gzip -9 debian/tmp/usr/doc/swisswatch/changelog.Debian
+#
+	$(INSTALL_DATA) README debian/tmp/usr/doc/swisswatch
+	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/swisswatch
+#
+	dpkg-shlibdeps swisswatch
+	dpkg-gencontrol  -isp -pswisswatch -Pdebian/tmp
+	dpkg --build debian/tmp ..
+
+define checkdir
+	test -f swisswatch.c -a -f debian/rules
+endef
+
+binary: binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test root = "`whoami`"
+
+.PHONY: config build clean binary binary-arch binary-indep
