@@ -1,15 +1,15 @@
 Source: swisswatch
 Section: x11
 Priority: optional
-Maintainer:  Justin Maurer <justin@debian.org>
-Build-Depends: xlibs-dev, xutils
-Standards-Version: 3.5.2
+Maintainer:  Roland Stigge <stigge@antcom.de>
+Build-Depends: debhelper (>> 3.0.0), xlibs-dev, xutils
+Standards-Version: 3.5.10
 
 Package: swisswatch
 Architecture: any
 Depends: ${shlibs:Depends}
 Description: the mother of all X Toolkit clocks
- Swisswatch is a reimplementation of der Mouse's mclock program using
+ Swisswatch is a reimplementation of Der Mouse's mclock program using
  lightweight X Toolkit objects ("gadgets").  It relies heavily on resources
  for configuration, and can assume a wide range of looks.  The application
  defaults files distributed with swisswatch currently support an oclock

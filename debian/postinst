@@ -1,7 +1,0 @@
-#!/bin/sh
-
-set -e
-
-if [ -d /usr/doc -a ! -e /usr/doc/swisswatch -a -d /usr/share/doc/swisswatch ]; then
-	ln -sf ../share/doc/swisswatch /usr/doc/swisswatch
-fi

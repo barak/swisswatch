@@ -1,3 +1,16 @@
+swisswatch (0.6-8) unstable; urgency=low
+
+  * New maintainer (Closes: #194029)
+  * Clarified name (actually "Der Mouse"!) in Description (Closes: #130241)
+  * Standards-Version: 3.5.10
+  * Moved /usr/X11R6 executable and man page files to /usr hierarchy
+  * Added debian/menu (Closes: #51998)
+  * Acknowledged NMU (Closes: #86292)
+  * debian/rules: rewrite with debhelper utilization
+  * Upstream ChangeLog included in binary package
+
+ -- Roland Stigge <stigge@antcom.de>  Wed, 28 May 2003 11:45:06 +0200
+
 swisswatch (0.6-7.1.1) unstable; urgency=low
 
   * Binary NMU.

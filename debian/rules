@@ -1,106 +1,69 @@
 #!/usr/bin/make -f
 # debian/rules file - for swisswatch
 # Copyright 1998 by Rob Browning
+# Copyright 2003 by Roland Stigge
 
-SHELL  := /bin/bash
-CC     := gcc
-CFLAGS := -O2 -g -Wall -DSHAPE
+# This is the debhelper compatibility version to use.
+export DH_COMPAT=3
 
-pwd      := $(shell pwd)
+CFLAGS := -g -Wall -DSHAPE
 
-srcname  := $(shell dpkg-parsechangelog | grep Source:)
-srcname  := $(shell echo ${srcname} | perl -pe 's/^Source:\s+//o')
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
 
-version  := $(shell dpkg-parsechangelog | grep Version:)
-version  := $(shell echo ${version} | perl -pe 's/^Version:\s+//o')
-upstream := $(shell echo ${version} | perl -pe 's/-[^-]*$$//o')
-deb_rev  := $(shell echo ${version} | perl -pe 's/.*-//o')
+build: build-stamp
 
-# the architecture of the package
-arch      := $(shell dpkg --print-architecture)
-
-# The Debian target name of the package
-target    := ${arch}-debian-linux-gnu
-
-INSTALL =/usr/bin/install
-INSTALL_DIR =$(INSTALL) -d -m 755 -o root -g root
-INSTALL_PROGRAM =$(INSTALL) -s -m 755 -o root -g root
-INSTALL_SCRIPT =$(INSTALL) -m 755 -o root -g root
-INSTALL_DATA =$(INSTALL) -m 644 -o root -g root
-INSTALL_MAN =$(INSTALL) -m 444 -o root -g root
-
-check-auto-parse:
-	@echo "     srcname:" ${srcname}
-	@echo "     version:" ${version}
-	@echo "    upstream:" ${upstream}
-	@echo "     deb_rev:" ${deb_rev}
-
-build:
-	$(checkdir)
-	make -f Makefile.simple CC="$(CC)" CFLAGS="$(CFLAGS)"
-	touch stamp-build
+build-stamp:
+	dh_testdir
+	$(MAKE) -f Makefile.simple
+	touch build-stamp
 
 clean:
-	$(checkdir)
-	make -f Makefile.simple clean
-	-rm -f stamp-build
-	-rm -rf debian/tmp* debian/files debian/substvars debian/*~
+	dh_testdir
+	dh_testroot
+	$(MAKE) -f Makefile.simple clean
+	-rm -f build-stamp
+	dh_clean
 
-binary-indep: checkroot
-	$(checkdir)
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
 
-binary-arch: checkroot
-	$(checkdir)
-	-rm -rf debian/tmp*
-	test -f stamp-build || make -f debian/rules build
-#
-#
-# debian/tmp
-	$(INSTALL_DIR) debian/tmp
-	$(INSTALL_DIR) debian/tmp/DEBIAN
-	$(INSTALL_DATA) debian/conffiles debian/tmp/DEBIAN
-	$(INSTALL_SCRIPT) debian/postinst debian/tmp/DEBIAN
-	$(INSTALL_SCRIPT) debian/prerm debian/tmp/DEBIAN
-# binaries
-	$(INSTALL_DIR) debian/tmp/usr/X11R6/bin
-	$(INSTALL_PROGRAM) swisswatch debian/tmp/usr/X11R6/bin
-# app-defaults
-	$(INSTALL_DIR) debian/tmp/etc/X11/app-defaults
-	$(INSTALL_DATA) SWatch.ad \
-	  debian/tmp/etc/X11/app-defaults/SwissWatch
-	$(INSTALL_DATA) SWatch-co.ad \
-	  debian/tmp/etc/X11/app-defaults/SwissWatch-color
-# man pages
-	$(INSTALL_DIR) debian/tmp/usr/X11R6/man/man1
-	$(INSTALL_MAN)	swisswatch.man \
-	  debian/tmp/usr/X11R6/man/man1/swisswatch.1
-	chmod 0644 debian/tmp/usr/X11R6/man/man1/swisswatch.1 # kludgy
-							      # FIXME
-	-gzip -9fr debian/tmp/usr/X11R6/man
-# documentation
-	$(INSTALL_DIR) debian/tmp/usr/share/doc/${srcname}
-	$(INSTALL_DATA) debian/copyright debian/tmp/usr/share/doc/${srcname}
-	$(INSTALL_DATA) debian/changelog \
-	  debian/tmp/usr/share/doc/${srcname}/changelog.Debian
-	gzip -9 debian/tmp/usr/share/doc/${srcname}/changelog.Debian
-#
-	dpkg-shlibdeps debian/tmp/usr/X11R6/bin/swisswatch
-	dpkg-gencontrol  -isp -p${srcname} -Pdebian/tmp
-	dpkg --build debian/tmp ..
+	dh_install swisswatch usr/bin/
+	dh_install SWatch.ad SWatch-co.ad etc/X11/app-defaults/
+	mv $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/SWatch.ad \
+	   $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/SwissWatch
+	mv $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/SWatch-co.ad \
+	   $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/SwissWatch-color
+	
 
-define checkdir
-	test -f swisswatch.c -a -f debian/rules
-endef
+# Build architecture-independent files here.
+binary-indep: build install
 
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs -n
+	dh_installmenu
+	dh_installman swisswatch.man
+	dh_installchangelogs ChangeLog
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+	
 binary: binary-indep binary-arch
-
-checkroot:
-	$(checkdir)
-	test root = "`whoami`"
-
 .PHONY: build clean binary binary-arch binary-indep
-
-# Local variables:
-# mode: makefile
-# tab-width: 2
-# End:

@@ -1,0 +1,2 @@
+?package(swisswatch):needs=X11 section=Apps/Tools hints="Clocks"\
+  title="swisswatch" command="/usr/bin/swisswatch"
