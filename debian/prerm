@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "remove" ]; then
+	if [ -L /usr/doc/swisswatch ]; then
+		rm /usr/doc/swisswatch
+	fi
+fi

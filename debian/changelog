@@ -1,3 +1,28 @@
+swisswatch (0.6-7.1.1) unstable; urgency=low
+
+  * Binary NMU.
+    Previous binary NMU had bad version number.
+
+ -- Francesco P. Lovergine <frankie@debian.org>  Thu, 31 Jan 2002 15:41:01 +0100
+
+swisswatch (0.6-7.1) unstable; urgency=low
+
+  * NMU
+  * lintian 1.20.9 clean
+  * SwissWatch.c: #include <time.h>
+  * debian/conffiles: add app-defaults files
+  * debian/control:
+    - added Build-Depends
+    - bumped Standards-Version to 3.5.2
+    - reformatted package description
+  * debian/{postinst,prerm}: manage /usr/doc symlink
+  * debian/rules:
+    - /usr/X11R6/lib/X11/app-defaults -> /etc/X11/app-defaults
+    - /usr/doc -> /usr/share/doc
+    - ship conffiles, postinst and prerm
+
+ -- Branden Robinson <branden@debian.org>  Sat, 17 Mar 2001 22:40:26 -0500
+
 swisswatch (0.6-7) unstable; urgency=low
 
   * Release on alpha and i386 architechtures

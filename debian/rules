@@ -25,6 +25,7 @@ target    := ${arch}-debian-linux-gnu
 INSTALL =/usr/bin/install
 INSTALL_DIR =$(INSTALL) -d -m 755 -o root -g root
 INSTALL_PROGRAM =$(INSTALL) -s -m 755 -o root -g root
+INSTALL_SCRIPT =$(INSTALL) -m 755 -o root -g root
 INSTALL_DATA =$(INSTALL) -m 644 -o root -g root
 INSTALL_MAN =$(INSTALL) -m 444 -o root -g root
 
@@ -57,15 +58,18 @@ binary-arch: checkroot
 # debian/tmp
 	$(INSTALL_DIR) debian/tmp
 	$(INSTALL_DIR) debian/tmp/DEBIAN
+	$(INSTALL_DATA) debian/conffiles debian/tmp/DEBIAN
+	$(INSTALL_SCRIPT) debian/postinst debian/tmp/DEBIAN
+	$(INSTALL_SCRIPT) debian/prerm debian/tmp/DEBIAN
 # binaries
 	$(INSTALL_DIR) debian/tmp/usr/X11R6/bin
 	$(INSTALL_PROGRAM) swisswatch debian/tmp/usr/X11R6/bin
 # app-defaults
-	$(INSTALL_DIR) debian/tmp/usr/X11R6/lib/X11/app-defaults
+	$(INSTALL_DIR) debian/tmp/etc/X11/app-defaults
 	$(INSTALL_DATA) SWatch.ad \
-	  debian/tmp/usr/X11R6/lib/X11/app-defaults/SwissWatch
+	  debian/tmp/etc/X11/app-defaults/SwissWatch
 	$(INSTALL_DATA) SWatch-co.ad \
-	  debian/tmp/usr/X11R6/lib/X11/app-defaults/SwissWatch-color
+	  debian/tmp/etc/X11/app-defaults/SwissWatch-color
 # man pages
 	$(INSTALL_DIR) debian/tmp/usr/X11R6/man/man1
 	$(INSTALL_MAN)	swisswatch.man \
@@ -74,11 +78,11 @@ binary-arch: checkroot
 							      # FIXME
 	-gzip -9fr debian/tmp/usr/X11R6/man
 # documentation
-	$(INSTALL_DIR) debian/tmp/usr/doc/${srcname}
-	$(INSTALL_DATA) debian/copyright debian/tmp/usr/doc/${srcname}
+	$(INSTALL_DIR) debian/tmp/usr/share/doc/${srcname}
+	$(INSTALL_DATA) debian/copyright debian/tmp/usr/share/doc/${srcname}
 	$(INSTALL_DATA) debian/changelog \
-	  debian/tmp/usr/doc/${srcname}/changelog.Debian
-	gzip -9 debian/tmp/usr/doc/${srcname}/changelog.Debian
+	  debian/tmp/usr/share/doc/${srcname}/changelog.Debian
+	gzip -9 debian/tmp/usr/share/doc/${srcname}/changelog.Debian
 #
 	dpkg-shlibdeps debian/tmp/usr/X11R6/bin/swisswatch
 	dpkg-gencontrol  -isp -p${srcname} -Pdebian/tmp
