@@ -1,8 +1,8 @@
 Source: swisswatch
 Section: x11
 Priority: optional
-Maintainer:  Karl Sackett <krs@debian.org>
-Standards-Version: 2.1.2.2
+Maintainer:  Rob Browning <rlb@cs.utexas.edu>
+Standards-Version: 2.1.3.2
 
 Package: swisswatch
 Architecture: any

@@ -1,3 +1,18 @@
+swisswatch (0.6-3) unstable; urgency=low
+
+  * New maintainer
+  * app-defaults no longer a conffile (Bug#11233)
+  * fixed mixed libc5/6 dependency (bug#12818)
+  * be sure binaries are stripped
+
+ -- Rob Browning <rlb@cs.utexas.edu>  Sun, 23 Nov 1997 11:15:33 -0600
+
+swisswatch (0.6-2) unstable; urgency=low
+
+  * Recompiled with libc6.
+
+ -- Karl Sackett <krs@debian.org>  Fri, 20 Jun 1997 10:50:01 -0500
+
 swisswatch (0.6-1) unstable; urgency=low
 
   * First Debian release.

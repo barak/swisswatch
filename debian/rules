@@ -10,7 +10,7 @@ srcdir =.
 
 INSTALL =/usr/bin/install
 INSTALL_DIR =$(INSTALL) -d -m 755 -o root -g root
-INSTALL_PROGRAM =$(INSTALL) -m 755 -o root -g root
+INSTALL_PROGRAM =$(INSTALL) -s -m 755 -o root -g root
 INSTALL_DATA =$(INSTALL) -m 644 -o root -g root
 INSTALL_MAN =$(INSTALL) -m 444 -o root -g root
 
@@ -29,7 +29,7 @@ clean:
 	test -f stamp-config || make -f debian/rules config
 	make -f Makefile.simple clean
 	-rm -f stamp-config stamp-build
-	-rm -rf debian/tmp* debian/files debian/substvars
+	-rm -rf debian/tmp* debian/files debian/substvars debian/*~
 
 binary-indep: checkroot
 	$(checkdir)
@@ -43,7 +43,6 @@ binary-arch: checkroot
 # debian/tmp
 	$(INSTALL_DIR) debian/tmp
 	$(INSTALL_DIR) debian/tmp/DEBIAN
-	$(INSTALL_DATA) debian/conffiles debian/tmp/DEBIAN
 # binaries
 	$(INSTALL_DIR) debian/tmp/usr/X11R6/bin
 	$(INSTALL_PROGRAM) -s swisswatch debian/tmp/usr/X11R6/bin
@@ -66,7 +65,9 @@ binary-arch: checkroot
 	gzip -9 debian/tmp/usr/doc/swisswatch/changelog.Debian
 #
 	$(INSTALL_DATA) README debian/tmp/usr/doc/swisswatch
-	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/swisswatch
+	$(INSTALL_DATA) ChangeLog \
+	  debian/tmp/usr/doc/swisswatch/changelog.upstream
+	gzip -9 debian/tmp/usr/doc/swisswatch/changelog.upstream
 #
 	dpkg-shlibdeps swisswatch
 	dpkg-gencontrol  -isp -pswisswatch -Pdebian/tmp
