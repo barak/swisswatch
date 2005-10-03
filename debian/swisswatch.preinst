@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+	install|upgrade)
+		# clean up cruft from versions << 0.6-8
+		if [ -h /usr/doc/swisswatch ]; then
+			rm -f /usr/doc/swisswatch
+		fi
+                ;;
+	abort-upgrade)
+		;;
+	*)
+		echo "preinst called with unknown argument \`$1'" >&2
+		exit 1
+		;;
+esac
+
+#DEBHELPER#

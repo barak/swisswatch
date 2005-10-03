@@ -1,3 +1,11 @@
+swisswatch (0.6-9) unstable; urgency=low
+
+  * debian/swisswatch.preinst: Removing /usr/doc/swisswatch (Closes: #330382)
+  * debian/menu: Fixed quoting
+  * debian/control: Standards-Version: 3.6.2
+
+ -- Roland Stigge <stigge@antcom.de>  Mon,  3 Oct 2005 17:17:35 +0200
+
 swisswatch (0.6-8) unstable; urgency=low
 
   * New maintainer (Closes: #194029)
