@@ -52,6 +52,8 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
+	dh_installdirs
+	dh_install
 	dh_installdocs -n
 	dh_installmenu
 	dh_installman swisswatch.man

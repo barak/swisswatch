@@ -1,2 +1,2 @@
 ?package(swisswatch):needs="X11" section="Apps/Tools" hints="Clocks"\
-  title="swisswatch" command="/usr/bin/swisswatch"
+  title="swisswatch" command="/usr/bin/swisswatch" icon="/usr/share/pixmaps/swisswatch.xpm"

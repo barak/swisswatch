@@ -1,3 +1,15 @@
+swisswatch (0.6-10) unstable; urgency=low
+
+  * debian/copyright: Removed broken alternative download location
+  * Added swisswatch.xpm to menu (thanks to DJ Clark
+    <swisswatch@djclark.co.uk>)
+  * Added hilfiker and botta styles, made hilfiker the default
+    (both hilfiker and botta by DJ Clark <swisswatch@djclark.co.uk>)
+  * debian/control: Adjusted Description
+  * Adjusted man page
+
+ -- Roland Stigge <stigge@antcom.de>  Sun, 30 Oct 2005 17:54:16 +0100
+
 swisswatch (0.6-9) unstable; urgency=low
 
   * debian/swisswatch.preinst: Removing /usr/doc/swisswatch (Closes: #330382)

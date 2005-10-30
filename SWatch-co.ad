@@ -1,10 +1,10 @@
 #include "SwissWatch"
 
-swisswatch*SwissWatch.child_4.foreground:		green
-swisswatch*SwissWatch.child_5.foreground:		green
-swisswatch*SwissWatch.child_6.foreground:		red
-swisswatch*SwissWatch.Mark.foreground:			green
-swisswatch*SwissWatch.Hand.foreground:			grey80
+fancy*SwissWatch.child_4.foreground:		green
+fancy*SwissWatch.child_5.foreground:		green
+fancy*SwissWatch.child_6.foreground:		red
+fancy*SwissWatch.Mark.foreground:			green
+fancy*SwissWatch.Hand.foreground:			grey80
 !
 swissclock*SwissWatch.child_5.foreground:		red
 swissclock*SwissWatch.child_6.foreground:		red

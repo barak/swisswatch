@@ -8,11 +8,9 @@ Standards-Version: 3.6.2
 Package: swisswatch
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: the mother of all X Toolkit clocks
- Swisswatch is a reimplementation of Der Mouse's mclock program using
- lightweight X Toolkit objects ("gadgets").  It relies heavily on resources
- for configuration, and can assume a wide range of looks.  The application
- defaults files distributed with swisswatch currently support an oclock
- emulation, a Swiss railway clock emulation, and a fancy default appearance.
- You are encouraged to play with the resources and create your personalized
- version.
+Description: Swiss Railway Clock for the X Window System
+ Swisswatch is a clock for the X desktop.  It relies heavily on resources for
+ configuration, and can be adjusted to a wide range of looks.  While it can be
+ configured completely via resources and provides looks for a Botta (SFMoMA)
+ clock style, an oclock emulation and other appearances, it defaults to the
+ style of a Swiss Railway Clock.
