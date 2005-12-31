@@ -1,3 +1,9 @@
+swisswatch (0.6-11) unstable; urgency=low
+
+  * swisswatch.man: Documented previous style "-name fancy" (Closes: #345430)
+
+ -- Roland Stigge <stigge@antcom.de>  Sat, 31 Dec 2005 15:15:05 +0100
+
 swisswatch (0.6-10) unstable; urgency=low
 
   * debian/copyright: Removed broken alternative download location

@@ -212,6 +212,8 @@ swisswatch
 .sp 1
 swisswatch -name swisswatch
 .sp 1
+swisswatch -name fancy
+.sp 1
 swisswatch -name botta
 .sp 1
 swisswatch -name swissclock
