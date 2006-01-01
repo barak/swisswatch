@@ -2,7 +2,7 @@ Source: swisswatch
 Section: x11
 Priority: optional
 Maintainer:  Roland Stigge <stigge@antcom.de>
-Build-Depends: debhelper (>> 3.0.0), xlibs-dev, xutils
+Build-Depends: debhelper (>> 3.0.0), xutils, libx11-dev, libxext-dev, libxmu-dev, libxt-dev, x-dev
 Standards-Version: 3.6.2
 
 Package: swisswatch
