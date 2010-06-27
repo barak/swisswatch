@@ -205,16 +205,10 @@ If set, the clock will remain circular even if one tries to resize it
 to a non-circular ellipse.  This is the previous behavior.  The
 possible values are the same as for \fB.swiss/.Swiss\fP.
 .SH EXAMPLE RESOURCES
-The distributed application defaults files define various different
+The distributed application defaults files define three different
 looks for swisswatch.  Try them out by calling it as
 .sp 1
 swisswatch
-.sp 1
-swisswatch -name swisswatch
-.sp 1
-swisswatch -name fancy
-.sp 1
-swisswatch -name botta
 .sp 1
 swisswatch -name swissclock
 .sp 1

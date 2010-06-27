@@ -19,7 +19,6 @@
 #include "Hand.h"
 #include "Mark.h"
 #include <math.h>
-#include <time.h>
 
 #if NeedFunctionPrototypes
 static void Initialize(Widget,Widget,ArgList,Cardinal*);

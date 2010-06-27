@@ -1,3 +1,15 @@
+swisswatch (0.6-13) unstable; urgency=low
+
+  * debian/control:
+    - Changed Build-Depends from x-dev to x11proto-core-dev (Closes: #515396)
+    - Standards-Version: 3.8.4
+    - Build-Depends: debhelper (>= 7), debian/compat: 7
+    - Removed Build-Depends: xutils (obsolete package)
+  * Moved to new source format 3.0 (quilt)
+  * debian/menu: Changed section from Apps/Tools to Applications/Graphics
+
+ -- Roland Stigge <stigge@antcom.de>  Sun, 27 Jun 2010 18:10:02 +0200
+
 swisswatch (0.6-12) unstable; urgency=low
 
   * debian/control: Adjusted to modular X build dependencies (Closes: #345535)

@@ -2,12 +2,12 @@ Source: swisswatch
 Section: x11
 Priority: optional
 Maintainer:  Roland Stigge <stigge@antcom.de>
-Build-Depends: debhelper (>> 3.0.0), xutils, libx11-dev, libxext-dev, libxmu-dev, libxt-dev, x-dev
-Standards-Version: 3.6.2
+Build-Depends: debhelper (>= 7), libx11-dev, libxext-dev, libxmu-dev, libxt-dev, x11proto-core-dev
+Standards-Version: 3.8.4
 
 Package: swisswatch
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Swiss Railway Clock for the X Window System
  Swisswatch is a clock for the X desktop.  It relies heavily on resources for
  configuration, and can be adjusted to a wide range of looks.  While it can be
