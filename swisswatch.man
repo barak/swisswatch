@@ -42,7 +42,7 @@ fit the outline of the clock.
 .TP 8
 .B \-ffs
 causes the second and minute hands to behave differently at the turn
-of the minute.  This mode tries to mimick the Look and Feel of the
+of the minute.  This mode tries to mimic the Look and Feel of the
 swiss federal railway clocks.
 .SH RESOURCES
 .TP 8
