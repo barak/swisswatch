@@ -1,12 +1,18 @@
-Description: Manpage adjustments
- This patch adjusts the manpage by specifying further clock designs included in
- the Debian distribution.
-Author: Roland Stigge <stigge@antcom.de>
-Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=345430
+From: Roland Stigge <stigge@antcom.de>
+Date: Mon, 5 Sep 2016 16:23:07 +0100
+Subject: manpage
 
---- swisswatch-0.6.orig/swisswatch.man
-+++ swisswatch-0.6/swisswatch.man
-@@ -205,11 +205,17 @@ If set, the clock will remain circular e
+Adjust the manpage by specifying further clock designs included in
+the Debian distribution.
+---
+ swisswatch.man | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/swisswatch.man b/swisswatch.man
+index 47201f6..c6ae985 100644
+--- a/swisswatch.man
++++ b/swisswatch.man
+@@ -205,11 +205,17 @@ If set, the clock will remain circular even if one tries to resize it
  to a non-circular ellipse.  This is the previous behavior.  The
  possible values are the same as for \fB.swiss/.Swiss\fP.
  .SH EXAMPLE RESOURCES
@@ -25,4 +31,3 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=345430
  swisswatch -name swissclock
  .sp 1
  swisswatch -name oclock
-

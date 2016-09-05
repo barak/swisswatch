@@ -1,10 +1,39 @@
-Descriptions: Adjustments to ad files to fix and extend clocks
- This patch includes changes to the ad files responsible for the look of the
- clocks.
-Author: Roland Stigge <stigge@antcom.de>
+From: Roland Stigge <stigge@antcom.de>
+Date: Mon, 5 Sep 2016 16:23:07 +0100
+Subject: adjust-ad
 
---- swisswatch-0.6.orig/SWatch.ad
-+++ swisswatch-0.6/SWatch.ad
+Adjustments to ad files to fix and extend clocks
+This patch includes changes to the ad files responsible for the look of the
+clocks.
+---
+ SWatch-co.ad |  10 +--
+ SWatch.ad    | 217 +++++++++++++++++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 185 insertions(+), 42 deletions(-)
+
+diff --git a/SWatch-co.ad b/SWatch-co.ad
+index 86b66e9..c534eff 100644
+--- a/SWatch-co.ad
++++ b/SWatch-co.ad
+@@ -1,10 +1,10 @@
+ #include "SwissWatch"
+ 
+-swisswatch*SwissWatch.child_4.foreground:		green
+-swisswatch*SwissWatch.child_5.foreground:		green
+-swisswatch*SwissWatch.child_6.foreground:		red
+-swisswatch*SwissWatch.Mark.foreground:			green
+-swisswatch*SwissWatch.Hand.foreground:			grey80
++fancy*SwissWatch.child_4.foreground:		green
++fancy*SwissWatch.child_5.foreground:		green
++fancy*SwissWatch.child_6.foreground:		red
++fancy*SwissWatch.Mark.foreground:			green
++fancy*SwissWatch.Hand.foreground:			grey80
+ !
+ swissclock*SwissWatch.child_5.foreground:		red
+ swissclock*SwissWatch.child_6.foreground:		red
+diff --git a/SWatch.ad b/SWatch.ad
+index fbca680..ca8bb7a 100644
+--- a/SWatch.ad
++++ b/SWatch.ad
 @@ -14,52 +14,195 @@
  *SwissWatch.Hand.outer:		.9
  *SwissWatch.width:		100
@@ -238,22 +267,3 @@ Author: Roland Stigge <stigge@antcom.de>
  
  swissclock*Background:				snow1
  swissclock*Foreground:				black
---- swisswatch-0.6.orig/SWatch-co.ad
-+++ swisswatch-0.6/SWatch-co.ad
-@@ -1,10 +1,10 @@
- #include "SwissWatch"
- 
--swisswatch*SwissWatch.child_4.foreground:		green
--swisswatch*SwissWatch.child_5.foreground:		green
--swisswatch*SwissWatch.child_6.foreground:		red
--swisswatch*SwissWatch.Mark.foreground:			green
--swisswatch*SwissWatch.Hand.foreground:			grey80
-+fancy*SwissWatch.child_4.foreground:		green
-+fancy*SwissWatch.child_5.foreground:		green
-+fancy*SwissWatch.child_6.foreground:		red
-+fancy*SwissWatch.Mark.foreground:			green
-+fancy*SwissWatch.Hand.foreground:			grey80
- !
- swissclock*SwissWatch.child_5.foreground:		red
- swissclock*SwissWatch.child_6.foreground:		red
-

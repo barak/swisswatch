@@ -1,68 +1,19 @@
 #!/usr/bin/make -f
-# debian/rules file - for swisswatch
-# Copyright 1998 by Rob Browning
-# Copyright 2003 by Roland Stigge
 
-CFLAGS := -g -Wall -DSHAPE
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-	CFLAGS += -O0
-else
-	CFLAGS += -O2
-endif
-ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
-	INSTALL_PROGRAM += -s
-endif
+%:
+	dh $@ --parallel
 
-build: build-stamp
+override_dh_auto_build:
+	dh_auto_build --buildsystem makefile -- -f Makefile.simple
 
-build-stamp:
-	dh_testdir
-	$(MAKE) -f Makefile.simple
-	touch build-stamp
+override_dh_auto_clean:
+	dh_auto_clean --buildsystem makefile -- -f Makefile.simple
 
-clean:
-	dh_testdir
-	dh_testroot
-	$(MAKE) -f Makefile.simple clean
-	-rm -f build-stamp
-	dh_clean
-
-install: build
-	dh_testdir
-	dh_testroot
-	dh_prep
-	dh_installdirs
-
-	dh_install swisswatch usr/bin/
-	dh_install SWatch.ad SWatch-co.ad etc/X11/app-defaults/
+override_dh_install:
+	dh_install
 	mv $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/SWatch.ad \
 	   $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/SwissWatch
 	mv $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/SWatch-co.ad \
 	   $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/SwissWatch-color
-	
-
-# Build architecture-independent files here.
-binary-indep: build install
-
-# Build architecture-dependent files here.
-binary-arch: build install
-	dh_testdir
-	dh_testroot
-	dh_installdirs
-	dh_install
-	dh_installdocs -n
-	dh_installmenu
-	dh_installman swisswatch.man
-	dh_installchangelogs ChangeLog
-	dh_strip
-	dh_compress
-	dh_fixperms
-	dh_installdeb
-	dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
-	
-binary: binary-indep binary-arch
-.PHONY: build clean binary binary-arch binary-indep

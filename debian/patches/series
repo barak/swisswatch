@@ -1,4 +1,5 @@
-adjust-ad.patch
-fix-header.patch
-fix-makefile.patch
-fix-manpage.patch
+0001-adjust-ad.patch
+0002-include-headers.patch
+0003-makefile.patch
+0004-manpage.patch
+0005-spelling.patch

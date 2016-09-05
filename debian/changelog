@@ -133,7 +133,3 @@ swisswatch (0.6-1) unstable; urgency=low
   * Makefile.simple: set X11R6 header and library paths.
 
  -- Karl Sackett <krs@debian.org>  Fri, 31 Jan 1997 10:15:16 -0600
-
-Local variables:
-mode: debian-changelog
-End:
