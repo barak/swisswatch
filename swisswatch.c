@@ -11,6 +11,7 @@
 #include <X11/StringDefs.h>
 #include "SwissWatch.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 #if NeedFunctionPrototypes
 static Widget initialize_user_interface(int*argcp,char**argv);
