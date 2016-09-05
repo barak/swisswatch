@@ -1,0 +1,6 @@
+/*.debhelper
+/*.debhelper.log
+/*.substvars
+/debhelper-build-stamp
+/files
+/swisswatch/
