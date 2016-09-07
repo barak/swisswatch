@@ -1,0 +1,21 @@
+From: Simon Leinen <simon.leinen@gmail.com>
+Date: Sat, 1 Jan 2000 17:15:13 +0000
+Subject: manpage linebreak
+
+Added missing .TP 8.
+---
+ swisswatch.man | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/swisswatch.man b/swisswatch.man
+index ba971df..ecff14c 100644
+--- a/swisswatch.man
++++ b/swisswatch.man
+@@ -24,6 +24,7 @@ choose a different color for the background.
+ .B \-tick \fItime\fB
+ the interval between updates of the display.  This should be a
+ positive floating-point number.
++.TP 8
+ .B \-geometry \fIgeometry\fB
+ define the initial window geometry; see \fIX(1)\fP.
+ .TP 8

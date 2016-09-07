@@ -1,5 +1,6 @@
-0001-adjust-ad.patch
+0001-adjust-ad-files.patch
 0002-include-headers.patch
 0003-makefile.patch
-0004-manpage.patch
+0004-manpage-designs.patch
 0005-spelling.patch
+0006-manpage-linebreak.patch

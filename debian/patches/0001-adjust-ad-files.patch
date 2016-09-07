@@ -1,8 +1,8 @@
 From: Roland Stigge <stigge@antcom.de>
 Date: Mon, 5 Sep 2016 16:23:07 +0100
-Subject: adjust-ad
+Subject: adjust ad files
 
-Adjustments to ad files to fix and extend clocks
+Adjustments to ad files to fix and extend clock designs.
 This patch includes changes to the ad files responsible for the look of the
 clocks.
 ---

@@ -1,9 +1,9 @@
 From: Roland Stigge <stigge@antcom.de>
 Date: Mon, 5 Sep 2016 16:23:07 +0100
-Subject: manpage
+Subject: manpage designs
 
 Adjust the manpage by specifying further clock designs included in
-the Debian distribution.
+the Debian distribution, specified by the -name option.
 ---
  swisswatch.man | 8 +++++++-
  1 file changed, 7 insertions(+), 1 deletion(-)
