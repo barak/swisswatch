@@ -3,7 +3,7 @@
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %:
-	dh $@ --parallel
+	dh $@
 
 override_dh_auto_build:
 	dh_auto_build --buildsystem makefile -- -f Makefile.simple
