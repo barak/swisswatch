@@ -1,3 +1,9 @@
+swisswatch (0.6-16) unstable; urgency=medium
+
+  * dh10
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 05 Jan 2017 16:57:24 +0100
+
 swisswatch (0.6-15) unstable; urgency=medium
 
   * Take over package (closes: #812757)
