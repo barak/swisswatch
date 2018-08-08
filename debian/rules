@@ -4,15 +4,3 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %:
 	dh $@
-
-override_dh_auto_build:
-	dh_auto_build --buildsystem makefile -- -f Makefile.simple
-
-override_dh_auto_clean:
-	dh_auto_clean --buildsystem makefile -- -f Makefile.simple
-
-override_dh_install:
-	dh_install
-	cd $(CURDIR)/debian/swisswatch/etc/X11/app-defaults/ \
-	 && mv SWatch.ad SwissWatch \
-	 && mv SWatch-co.ad SwissWatch-color

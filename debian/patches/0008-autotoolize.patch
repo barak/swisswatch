@@ -1,0 +1,224 @@
+From: "Barak A. Pearlmutter" <barak+git@pearlmutter.net>
+Date: Wed, 8 Aug 2018 10:57:07 +0200
+Subject: autotoolize
+
+---
+ Hand.c          |  4 ++++
+ HandOrMark.c    |  4 ++++
+ Makefile.am     | 25 +++++++++++++++++++++++++
+ Makefile.simple | 34 ----------------------------------
+ Mark.c          |  4 ++++
+ SwissWatch.c    |  4 ++++
+ TableConvert.c  |  4 ++++
+ configure.ac    | 38 ++++++++++++++++++++++++++++++++++++++
+ swisswatch.c    |  4 ++++
+ 9 files changed, 87 insertions(+), 34 deletions(-)
+ create mode 100644 Makefile.am
+ delete mode 100644 Makefile.simple
+ create mode 100644 configure.ac
+
+diff --git a/Hand.c b/Hand.c
+index 79b3f7f..fef7fa6 100644
+--- a/Hand.c
++++ b/Hand.c
+@@ -7,6 +7,10 @@
+  * RCS $Log$	 
+  ****************************************************************************/
+ 
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
+ #include <X11/IntrinsicP.h>
+ #include "HandP.h"
+ #include "SwissWatcP.h"
+diff --git a/HandOrMark.c b/HandOrMark.c
+index 19a0d81..02f0d6e 100644
+--- a/HandOrMark.c
++++ b/HandOrMark.c
+@@ -7,6 +7,10 @@
+  * RCS $Log$	 
+  ****************************************************************************/
+ 
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
+ #include <X11/IntrinsicP.h>
+ #include <X11/StringDefs.h>
+ #include <X11/Xresource.h>
+diff --git a/Makefile.am b/Makefile.am
+new file mode 100644
+index 0000000..e7cf489
+--- /dev/null
++++ b/Makefile.am
+@@ -0,0 +1,25 @@
++ACLOCAL_AMFLAGS = -I m4
++
++bin_PROGRAMS = swisswatch
++
++swisswatch_SOURCES = \
++ swisswatch.c \
++ Hand.c HandOrMark.c Mark.c SwissWatch.c TableConvert.c \
++ Hand.h HandOrMark.h Mark.h SwissWatch.h TableConvert.h \
++ SwissWatcP.h HandOrMarP.h HandP.h MarkP.h
++
++AM_CPPFLAGS = -D_GNU_SOURCE
++
++swisswatch.1: swisswatch.man
++	cp $< $@
++man_MANS = swisswatch.1
++
++appdefaultsdir = $(sysconfdir)/X11/app-defaults
++
++SwissWatch: SWatch.ad
++	cp $< $@
++SwissWatch-color: SWatch-co.ad
++	cp $< $@
++appdefaults_DATA = SwissWatch SwissWatch-color
++
++doc_DATA = README ChangeLog
+diff --git a/Makefile.simple b/Makefile.simple
+deleted file mode 100644
+index 0151d1f..0000000
+--- a/Makefile.simple
++++ /dev/null
+@@ -1,34 +0,0 @@
+-##############################################################################
+-# File Name:	Makefile.simple
+-# Description:	Makefile for the imake-deprived
+-# Author:	Logiciels X11 (x11@lia.di.epfl.ch)
+-# Date Created:	17-Jan-93
+-# RCS $Header$	
+-# RCS $Log$	
+-##############################################################################
+-## Edit and uncomment this line if you don't have the X11 include
+-## files under /usr/include/X11
+-# INCLUDES = -I/usr/X11R5/include
+-
+-## Edit and uncomment this line if you don't have the X11 libraries
+-## installed in the linker's standard search path
+-# XLIBDIR = -L/usr/X11R5/lib
+-
+-## Desired optimization/debugging options for the compiler
+-CDEBUGFLAGS = -O
+-
+-## Uncomment this line if you have an Xlib version that doesn't
+-## support the SHAPE extension (X11R3 or earlier).  If your libraries
+-## are really that old, the program probably won't compile anyway.
+-CPPFLAGS += -DSHAPE
+-
+-LOADLIBES += -lXt -lXmu -lXext -lX11
+-LOADLIBES += -lm
+-SRCS = swisswatch.c SwissWatch.c Hand.c Mark.c HandOrMark.c TableConvert.c
+-OBJS = swisswatch.o SwissWatch.o Hand.o Mark.o HandOrMark.o TableConvert.o
+-
+-swisswatch: $(OBJS)
+-
+-clean::
+-	rm -f swisswatch
+-	rm -f *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut "#"*
+diff --git a/Mark.c b/Mark.c
+index 0c15cf8..25ccae0 100644
+--- a/Mark.c
++++ b/Mark.c
+@@ -7,6 +7,10 @@
+  * RCS $Log$	 
+  ****************************************************************************/
+ 
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
+ #include <X11/IntrinsicP.h>
+ #include "MarkP.h"
+ #include <math.h>
+diff --git a/SwissWatch.c b/SwissWatch.c
+index e04a37a..7befcd2 100644
+--- a/SwissWatch.c
++++ b/SwissWatch.c
+@@ -7,6 +7,10 @@
+  * RCS $Log$	 
+  ****************************************************************************/
+ 
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
+ #include <X11/IntrinsicP.h>
+ #include <X11/StringDefs.h>
+ #include <X11/Xmu/Xmu.h>
+diff --git a/TableConvert.c b/TableConvert.c
+index 85207bb..48caa0f 100644
+--- a/TableConvert.c
++++ b/TableConvert.c
+@@ -7,6 +7,10 @@
+  * RCS $Log$	 
+  ****************************************************************************/
+ 
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
+ #include <X11/Intrinsic.h>
+ #include <X11/StringDefs.h>
+ #include "TableConvert.h"
+diff --git a/configure.ac b/configure.ac
+new file mode 100644
+index 0000000..90d6cae
+--- /dev/null
++++ b/configure.ac
+@@ -0,0 +1,38 @@
++#                                               -*- Autoconf -*-
++# Process this file with autoconf to produce a configure script.
++
++AC_PREREQ([2.69])
++AC_INIT([swisswatch],[0.6])
++AM_INIT_AUTOMAKE([foreign -Wall])
++AC_CONFIG_SRCDIR([swisswatch.c])
++AC_CONFIG_HEADERS([config.h])
++
++# Checks for programs.
++AC_PROG_CC
++AX_CFLAGS_WARN_ALL
++
++# Checks for libraries.
++AC_SEARCH_LIBS([sqrt], [m])
++AC_SEARCH_LIBS([sincos], [m])
++AC_SEARCH_LIBS([XFillArc], [X11])
++AC_SEARCH_LIBS([XShapeCombineMask], [Xext])
++AC_SEARCH_LIBS([XmuCopyISOLatin1Lowered], [Xmu])
++AC_SEARCH_LIBS([XtDisplay], [Xt])
++
++# Checks for header files.
++# AC_CHECK_HEADERS([stdlib.h])
++# AC_CHECK_HEADERS([time.h])
++# AC_CHECK_HEADERS([X11/extensions/shape.h])
++
++# Checks for typedefs, structures, and compiler characteristics.
++AC_CHECK_MEMBERS([struct tm.tm_gmtoff],[AC_DEFINE([HAVE_GMTOFF],[1],[Define to 1 if `tm_gmtoff' is a member of `struct tm'])],,[
++#include <time.h>
++])
++
++# Checks for library functions.
++# AC_CHECK_FUNCS([gettimeofday sqrt])
++AC_CHECK_FUNCS([sincos])
++AC_CHECK_FUNC([XShapeQueryExtension],[AC_DEFINE([SHAPE],[1],[Define to 1 shape extension is available])])
++
++AC_CONFIG_FILES([Makefile])
++AC_OUTPUT
+diff --git a/swisswatch.c b/swisswatch.c
+index f6391bd..fcb3d48 100644
+--- a/swisswatch.c
++++ b/swisswatch.c
+@@ -7,6 +7,10 @@
+  * RCS $Log$	 
+  ****************************************************************************/
+ 
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
+ #include <X11/Intrinsic.h>
+ #include <X11/StringDefs.h>
+ #include "SwissWatch.h"
