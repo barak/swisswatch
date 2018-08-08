@@ -1,6 +1,6 @@
 README: Swisswatch				 	-*- mode: text -*-
 
-Swisswatch is a reimplementation of der Mouse's mclock program using
+Swisswatch is a reimplementation of Der Mouse's mclock program using
 lightweight X Toolkit objects ("gadgets").  It relies heavily on
 resources for configuration, and can assume a wide range of looks.
 
