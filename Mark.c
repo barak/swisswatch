@@ -7,6 +7,10 @@
  * RCS $Log$	 
  ****************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <X11/IntrinsicP.h>
 #include "MarkP.h"
 #include <math.h>
