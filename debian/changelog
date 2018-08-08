@@ -1,3 +1,10 @@
+swisswatch (0.6-18) unstable; urgency=medium
+
+  * bump policy
+  * swizzle packaging repo to salsa
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Wed, 08 Aug 2018 10:19:22 +0200
+
 swisswatch (0.6-17) unstable; urgency=medium
 
   * bump policy
