@@ -1,6 +1,7 @@
 swisswatch (0.6-19) UNRELEASED; urgency=medium
 
   * Update watch file format version to 4.
+  * Bump debhelper from old 11 to 13.
 
  -- Barak A. Pearlmutter <bap@debian.org>  Fri, 12 Nov 2021 22:05:03 -0000
 
