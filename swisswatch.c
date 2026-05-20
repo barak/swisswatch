@@ -1,103 +1,329 @@
-/*****************************************************************************
- * File Name:	 swisswatch.c
- * Description:	 Swiss X Watch
- * Author:	 Simon Leinen (simon@liasun5)
- * Date Created: 10-Mar-92
- * RCS $Header$	 
- * RCS $Log$	 
- ****************************************************************************/
+/* swisswatch.c — Swiss Watch clock using GTK4 and Cairo */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <X11/Intrinsic.h>
-#include <X11/StringDefs.h>
-#include "SwissWatch.h"
-#include <stdio.h>
+#include <gtk/gtk.h>
+#include <math.h>
+#include <time.h>
+#include <sys/time.h>
+#include <string.h>
 #include <stdlib.h>
 
-#if NeedFunctionPrototypes
-static Widget initialize_user_interface(int*argcp,char**argv);
-static void quit(Widget,XEvent *,String *,Cardinal *);
-#else /* not NeedFunctionPrototypes */
-static Widget initialize_user_interface();
-static void quit();
-#endif /* not NeedFunctionPrototypes */
+typedef enum { SHAPE_TRIANGLE, SHAPE_RECTANGLE, SHAPE_ARROW, SHAPE_CIRCLE } ShapeStyle;
+typedef enum { RENDER_OUTLINE, RENDER_FILL } RenderType;
+typedef enum { CHILD_HAND, CHILD_MARK } ChildType;
 
-extern int
-main(argc, argv)
-     int argc;
-     char *argv[];
+typedef struct {
+    ChildType  type;
+    double     inner, outer, width, phase;
+    int        cycle;
+    double     stroke_width_r;
+    ShapeStyle shape;
+    RenderType render;
+    double     cx, cy;
+    double     r, g, b;
+} Child;
+
+typedef struct {
+    GtkWidget *window;
+    GtkWidget *drawing_area;
+    gboolean   railroad;
+    gboolean   circular;
+    int        tick_ms;
+    Child     *children;
+    int        n_children;
+    long       now_local_sec;
+    double     frac_sec;
+    double     bg_r, bg_g, bg_b;
+    guint      timer_id;
+} AppState;
+
+/* Coordinate macros: origin at clock centre, y-axis up, units = fraction of radius */
+#define SX(x) ((child->cx + (x)) * rad_x)
+#define SY(y) (-(child->cy + (y)) * rad_y)
+
+static void
+draw_shape(cairo_t *cr, const Child *child, double rad_x, double rad_y,
+           double s, double c)
 {
-  (void) initialize_user_interface(& argc, argv);
-  XtMainLoop();
-  return 0;
-}
+    double sw = child->stroke_width_r * sqrt(rad_x * rad_y);
+    if (sw < 1.0) sw = 1.0;
 
+    cairo_set_source_rgb(cr, child->r, child->g, child->b);
+    cairo_new_path(cr);
 
-static XrmOptionDescRec options[] =
-{
-  {"-fg",	  "*Foreground",       XrmoptionSepArg, NULL},
-  {"-bg",	  "*Background",       XrmoptionSepArg, NULL},
-  {"-foreground", "*Foreground",       XrmoptionSepArg, NULL},
-  {"-background", "*Background",       XrmoptionSepArg, NULL},
-  {"-tick",	  "*swissWatch.tickTime",  XrmoptionSepArg, NULL},
-  {"-railroad",	  "*swissWatch.railroad", XrmoptionNoArg, (XtPointer)"True"},
-  {"-sbb",	  "*swissWatch.railroad", XrmoptionNoArg, (XtPointer)"True"},
-  {"-cff",	  "*swissWatch.railroad", XrmoptionNoArg, (XtPointer)"True"},
-  {"-ffs",	  "*swissWatch.railroad", XrmoptionNoArg, (XtPointer)"True"},
-  {"-noshape",	  "*swissWatch.shapeWindow", XrmoptionNoArg, (XtPointer)"False"},
-  {"-circular",	  "*swissWatch.circular", XrmoptionNoArg, (XtPointer)"True"},
-};
+    switch (child->shape) {
+    case SHAPE_TRIANGLE:
+        if (child->width < 1e-3) {
+            cairo_move_to(cr, SX(c * child->inner), SY(s * child->inner));
+            cairo_line_to(cr, SX(c * child->outer), SY(s * child->outer));
+            cairo_set_line_width(cr, sw);
+            cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+            cairo_stroke(cr);
+        } else {
+            cairo_move_to(cr, SX(c * child->outer), SY(s * child->outer));
+            cairo_line_to(cr, SX(c * child->inner - s * child->width / 2),
+                              SY(s * child->inner + c * child->width / 2));
+            cairo_line_to(cr, SX(c * child->inner + s * child->width / 2),
+                              SY(s * child->inner - c * child->width / 2));
+            if (child->render == RENDER_OUTLINE) {
+                cairo_close_path(cr);
+                cairo_set_line_width(cr, sw);
+                cairo_stroke(cr);
+            } else {
+                cairo_fill(cr);
+            }
+        }
+        break;
 
-static XtActionsRec actions[] = {
-    {"quit",    quit},
-};
+    case SHAPE_RECTANGLE:
+    case SHAPE_ARROW:
+        if (child->width < 1e-3) {
+            cairo_move_to(cr, SX(c * child->inner), SY(s * child->inner));
+            cairo_line_to(cr, SX(c * child->outer), SY(s * child->outer));
+            cairo_set_line_width(cr, sw);
+            cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+            cairo_stroke(cr);
+        } else {
+            cairo_move_to(cr, SX(c * child->inner - s * child->width / 2),
+                              SY(s * child->inner + c * child->width / 2));
+            cairo_line_to(cr, SX(c * child->inner + s * child->width / 2),
+                              SY(s * child->inner - c * child->width / 2));
+            cairo_line_to(cr, SX(c * child->outer + s * child->width / 2),
+                              SY(s * child->outer - c * child->width / 2));
+            if (child->shape == SHAPE_ARROW)
+                cairo_line_to(cr, SX(c * (child->outer + child->width / 2)),
+                                  SY(s * (child->outer + child->width / 2)));
+            cairo_line_to(cr, SX(c * child->outer - s * child->width / 2),
+                              SY(s * child->outer + c * child->width / 2));
+            if (child->render == RENDER_OUTLINE) {
+                cairo_close_path(cr);
+                cairo_set_line_width(cr, sw);
+                cairo_stroke(cr);
+            } else {
+                cairo_fill(cr);
+            }
+        }
+        break;
 
-static Atom wm_delete_window;
-
-static Widget
-initialize_user_interface(argcp, argv)
-     int * argcp;
-     char ** argv;
-{
-  Widget top_level;
-  XtAppContext app_c;
-
-  top_level = XtInitialize(argv[0], "SwissWatch",
-			   options, XtNumber(options),
-			   argcp, argv);
-  if (* argcp != 1)
-    {
-      fprintf (stderr, "usage: %s [toolkitoptions ...]\n", argv[0]);
-      exit (42);
+    case SHAPE_CIRCLE: {
+        double ccx = SX(c * child->outer);
+        double ccy = SY(s * child->outer);
+        double rx = rad_x * child->width / 2;
+        double ry = rad_y * child->width / 2;
+        if (rx < 0.5 || ry < 0.5) break;
+        cairo_save(cr);
+        cairo_translate(cr, ccx, ccy);
+        cairo_scale(cr, rx, ry);
+        cairo_arc(cr, 0, 0, 1.0, 0, 2 * G_PI);
+        cairo_restore(cr);
+        if (child->render == RENDER_OUTLINE) {
+            cairo_set_line_width(cr, sw);
+            cairo_stroke(cr);
+        } else {
+            cairo_fill(cr);
+        }
+        break;
     }
-  app_c = XtWidgetToApplicationContext(top_level);
-  XtAppAddActions(app_c, actions, XtNumber(actions));
-  XtVaCreateManagedWidget("swissWatch",
-			  swissWatchWidgetClass, top_level, NULL);
-  XtRealizeWidget(top_level);
-  XtOverrideTranslations
-    (top_level, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
-  wm_delete_window = XInternAtom(XtDisplay(top_level), "WM_DELETE_WINDOW",
-				 False);
-  (void) XSetWMProtocols (XtDisplay(top_level), XtWindow(top_level),
-			  &wm_delete_window, 1);
-  return top_level;
+    }
 }
 
-static void quit(w, event, params, num_params)
-     Widget w;
-     XEvent *event;
-     String *params;
-     Cardinal *num_params;
+#undef SX
+#undef SY
+
+static void
+draw_mark(cairo_t *cr, const Child *child, double rad_x, double rad_y)
 {
-  if (event->type == ClientMessage &&
-      event->xclient.data.l[0] != wm_delete_window) {
-    XBell(XtDisplay(w), 0);
-  } else {
-    XCloseDisplay(XtDisplay(w));
-    exit(0);
-  }
+    for (int k = 0; k < child->cycle; k++) {
+        double ang = G_PI_2 - ((double)k / child->cycle * 2 * G_PI);
+        draw_shape(cr, child, rad_x, rad_y, sin(ang), cos(ang));
+    }
+}
+
+static void
+draw_hand(cairo_t *cr, const Child *child, long now_local_sec, double frac_sec,
+          gboolean railroad, double rad_x, double rad_y)
+{
+    double dnow = (double)now_local_sec + frac_sec;
+    double ang;
+
+    if (railroad && child->cycle < 464) {
+        /* Second hand: sweeps 62/60 of a circle in 57.5s, then snaps to 12 */
+        double pos = fmod(dnow - child->phase, 60.0);
+        if (pos < 0) pos += 60.0;
+        ang = (pos < 57.5) ? (pos * 2 * G_PI * 62) / 3600.0 : 0.0;
+    } else if (railroad) {
+        /* Minute/hour: snap to whole-minute boundaries */
+        double t = dnow - child->phase;
+        t -= fmod(t, 60.0) - 0.0001;
+        ang = fmod(t, (double)child->cycle) * 2 * G_PI / child->cycle;
+    } else {
+        double pos = fmod(dnow - child->phase, (double)child->cycle);
+        if (pos < 0) pos += child->cycle;
+        ang = pos * 2 * G_PI / child->cycle;
+    }
+
+    draw_shape(cr, child, rad_x, rad_y, sin(G_PI_2 - ang), cos(G_PI_2 - ang));
+}
+
+static void
+draw_watch(GtkDrawingArea *widget, cairo_t *cr, int width, int height, gpointer data)
+{
+    AppState *state = data;
+
+    cairo_set_source_rgb(cr, state->bg_r, state->bg_g, state->bg_b);
+    cairo_paint(cr);
+
+    double cx = width / 2.0;
+    double cy = height / 2.0;
+    double rad_x, rad_y;
+
+    if (state->circular)
+        rad_x = rad_y = MIN(cx, cy);
+    else
+        rad_x = cx, rad_y = cy;
+
+    cairo_save(cr);
+    cairo_translate(cr, cx, cy);
+
+    for (int i = 0; i < state->n_children; i++)
+        if (state->children[i].type == CHILD_MARK)
+            draw_mark(cr, &state->children[i], rad_x, rad_y);
+
+    for (int i = 0; i < state->n_children; i++)
+        if (state->children[i].type == CHILD_HAND)
+            draw_hand(cr, &state->children[i], state->now_local_sec,
+                      state->frac_sec, state->railroad, rad_x, rad_y);
+
+    cairo_restore(cr);
+}
+
+static void
+update_time(AppState *state)
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    struct tm *tm = localtime(&tv.tv_sec);
+#ifdef HAVE_GMTOFF
+    state->now_local_sec = tv.tv_sec + tm->tm_gmtoff;
+#else
+    state->now_local_sec = tm->tm_sec + tm->tm_min * 60
+                         + tm->tm_hour * 3600 + (long)tm->tm_mday * 86400;
+#endif
+    state->frac_sec = tv.tv_usec * 1e-6;
+}
+
+static gboolean
+on_tick(gpointer data)
+{
+    AppState *state = data;
+    update_time(state);
+    gtk_widget_queue_draw(state->drawing_area);
+    return G_SOURCE_CONTINUE;
+}
+
+static void
+on_activate(GtkApplication *app, gpointer user_data)
+{
+    AppState *state = user_data;
+
+    state->window = gtk_application_window_new(app);
+    gtk_window_set_title(GTK_WINDOW(state->window), "SwissWatch");
+    gtk_window_set_default_size(GTK_WINDOW(state->window), 300, 300);
+
+    state->drawing_area = gtk_drawing_area_new();
+    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(state->drawing_area),
+                                   draw_watch, state, NULL);
+    gtk_window_set_child(GTK_WINDOW(state->window), state->drawing_area);
+
+    update_time(state);
+    state->timer_id = g_timeout_add(state->tick_ms, on_tick, state);
+
+    gtk_window_present(GTK_WINDOW(state->window));
+}
+
+/*
+ * Swiss Railway Clock (SBB/CFF/FFS) — the default configuration.
+ * Dimensions from the original SWatch.ad application defaults file.
+ */
+static const Child swisswatch_children[] = {
+    /* Hour marks */
+    { CHILD_MARK, .inner=.725, .outer=.971, .width=0,     .cycle=12,    .stroke_width_r=.072,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* Minute marks */
+    { CHILD_MARK, .inner=.899, .outer=.971, .width=0,     .cycle=60,    .stroke_width_r=.029,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* Clock bezel */
+    { CHILD_MARK, .inner=0,    .outer=0,    .width=1.999, .cycle=1,     .stroke_width_r=.029,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=.5, .g=.5, .b=.5 },
+    /* Hour hand */
+    { CHILD_HAND, .inner=-.232,.outer=.638, .width=.116,  .cycle=43200, .stroke_width_r=0,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+    /* Minute hand */
+    { CHILD_HAND, .inner=-.232,.outer=.928, .width=.079,  .cycle=3600,  .stroke_width_r=0,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+    /* Second hand rod */
+    { CHILD_HAND, .inner=-.319,.outer=.720, .width=0,     .cycle=60,    .stroke_width_r=.043,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=1,  .g=0,  .b=0  },
+    /* Second hand dot */
+    { CHILD_HAND, .inner=0,    .outer=.617, .width=.217,  .cycle=60,    .stroke_width_r=0,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=1,  .g=0,  .b=0  },
+    /* Centre cap (red) */
+    { CHILD_HAND, .inner=0,    .outer=0,    .width=.072,  .cycle=1,     .stroke_width_r=0,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=1,  .g=0,  .b=0  },
+    /* Centre pin (grey) */
+    { CHILD_HAND, .inner=0,    .outer=0,    .width=.02,   .cycle=1,     .stroke_width_r=0,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=.5, .g=.5, .b=.5 },
+};
+
+int
+main(int argc, char *argv[])
+{
+    AppState state = {
+        .railroad = TRUE,
+        .circular = TRUE,
+        .tick_ms  = 60,       /* 60 ms → smooth second-hand sweep */
+        .bg_r = 1.0, .bg_g = 0.98, .bg_b = 0.98,  /* snow1 */
+    };
+
+    /* Strip our options from argv before GTK sees them */
+    int new_argc = 1;
+    char **new_argv = g_new(char *, argc + 1);
+    new_argv[0] = argv[0];
+
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "-railroad") || !strcmp(argv[i], "-sbb") ||
+            !strcmp(argv[i], "-cff")      || !strcmp(argv[i], "-ffs")) {
+            state.railroad = TRUE;
+        } else if (!strcmp(argv[i], "-norailroad")) {
+            state.railroad = FALSE;
+            state.tick_ms  = 1000;
+        } else if (!strcmp(argv[i], "-circular")) {
+            state.circular = TRUE;
+        } else if (!strcmp(argv[i], "-noshape")) {
+            /* no-op: GTK4 has no shaped-window extension */
+        } else if (!strcmp(argv[i], "-tick") && i + 1 < argc) {
+            double t = atof(argv[++i]);
+            state.tick_ms = (int)(t * 1000.0);
+            if (state.tick_ms < 16) state.tick_ms = 16;
+        } else {
+            new_argv[new_argc++] = argv[i];
+        }
+    }
+    new_argv[new_argc] = NULL;
+
+    state.n_children = G_N_ELEMENTS(swisswatch_children);
+    state.children   = g_memdup2(swisswatch_children, sizeof(swisswatch_children));
+
+    GtkApplication *app = gtk_application_new("org.debian.swisswatch",
+                                               G_APPLICATION_DEFAULT_FLAGS);
+    g_signal_connect(app, "activate", G_CALLBACK(on_activate), &state);
+    int status = g_application_run(G_APPLICATION(app), new_argc, new_argv);
+
+    g_object_unref(app);
+    g_free(new_argv);
+    g_free(state.children);
+    return status;
 }
