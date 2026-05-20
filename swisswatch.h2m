@@ -1,0 +1,52 @@
+[SYNOPSIS]
+\fBswisswatch\fR [\fIOPTION\fR...]
+
+[DESCRIPTION]
+.B swisswatch
+renders the iconic Swiss Railway (SBB/CFF/FFS) clock face designed by
+Hans Hilfiker in the 1940s.
+The second hand sweeps around in 57.5\~seconds, pauses at 12 o'clock
+until it receives the minute signal, then begins the next sweep.
+The minute hand jumps to the next minute position at each minute boundary.
+
+The clock face is drawn with Cairo and displayed in a GTK4 window that
+can be freely resized.
+
+[NOTES]
+The
+.B --tick
+option controls how often the display is redrawn.
+The default of 0.06\~seconds (approximately 17 frames per second) is fast
+enough for the smooth second-hand sweep in railroad mode.
+In
+.B --norailroad
+mode the default is 1\~second since no sub-second motion occurs.
+
+[EXAMPLES]
+Normal Swiss Railway clock:
+.RS
+.B swisswatch
+.RE
+
+Smooth second hand (non-railroad mode):
+.RS
+.B swisswatch --norailroad
+.RE
+
+[SEE ALSO]
+.BR xclock (1)
+
+[AUTHORS]
+Simon Leinen (Ecole Polytechnique Federale de Lausanne) wrote the
+original Xt/X11 version.
+.PP
+Der Mouse wrote the
+.I mclock
+program that inspired the original; portions of the documentation are
+adapted from
+.IR mclock.doc .
+.PP
+GTK4/Cairo port by Barak A.\& Pearlmutter.
+
+[REPORTING BUGS]
+Report bugs at: https://tracker.debian.org/pkg/swisswatch

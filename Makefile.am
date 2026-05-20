@@ -7,8 +7,16 @@ swisswatch_SOURCES = swisswatch.c
 AM_CPPFLAGS = -D_GNU_SOURCE $(GTK4_CFLAGS)
 swisswatch_LDADD = $(GTK4_LIBS) -lm
 
-swisswatch.1: swisswatch.man
-	cp $< $@
+swisswatch.1: swisswatch$(EXEEXT) $(srcdir)/swisswatch.h2m
+	LC_ALL=C $(HELP2MAN) \
+	  --name="Swiss Railway analog clock" \
+	  --no-info \
+	  --include=$(srcdir)/swisswatch.h2m \
+	  ./swisswatch$(EXEEXT) \
+	| sed 's/\[OPTION???\]/[OPTION...]/g' > $@
+
 man_MANS = swisswatch.1
+CLEANFILES = swisswatch.1
+EXTRA_DIST = swisswatch.h2m
 
 doc_DATA = README ChangeLog

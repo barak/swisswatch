@@ -21,5 +21,7 @@ AC_CHECK_MEMBERS([struct tm.tm_gmtoff],[AC_DEFINE([HAVE_GMTOFF],[1],[Define to 1
 #include <time.h>
 ])
 
+AM_MISSING_PROG([HELP2MAN], [help2man])
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

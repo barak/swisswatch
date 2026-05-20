@@ -278,6 +278,65 @@ static const Child swisswatch_children[] = {
       .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=.5, .g=.5, .b=.5 },
 };
 
+/* --- Command-line option storage --- */
+
+static gboolean opt_railroad   = FALSE;
+static gboolean opt_norailroad = FALSE;
+static gboolean opt_circular   = FALSE;
+static gboolean opt_noshape    = FALSE;  /* no-op; accepted for compatibility */
+static gboolean opt_version    = FALSE;
+static gdouble  opt_tick       = 0.0;
+
+static const GOptionEntry option_entries[] = {
+    { "railroad",   0,   0,                    G_OPTION_ARG_NONE,   &opt_railroad,
+      "Swiss Railway Clock second-hand mode (default)", NULL },
+    /* historical single-letter aliases, hidden from --help */
+    { "sbb",        0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+    { "cff",        0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+    { "ffs",        0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+    { "norailroad", 0,   0,                    G_OPTION_ARG_NONE,   &opt_norailroad,
+      "Smooth, continuous second-hand motion", NULL },
+    { "circular",   0,   0,                    G_OPTION_ARG_NONE,   &opt_circular,
+      "Keep face circular when window is non-square (default)", NULL },
+    { "noshape",    0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_noshape,
+      NULL, NULL },
+    { "tick",       0,   0,                    G_OPTION_ARG_DOUBLE,  &opt_tick,
+      "Update interval in seconds (default: 0.06)", "SECONDS" },
+    { "version",   'V',  0,                    G_OPTION_ARG_NONE,   &opt_version,
+      "Show version information and exit", NULL },
+    { NULL }
+};
+
+static int
+on_handle_local_options(GApplication *app, GVariantDict *options, gpointer user_data)
+{
+    (void)app; (void)options;
+    AppState *state = user_data;
+
+    if (opt_version) {
+        g_print("%s %s\n"
+                "Copyright (C) 1992 Simon Leinen\n"
+                "License GPLv2+: GNU General Public License v2 or later.\n",
+                PACKAGE_NAME, PACKAGE_VERSION);
+        return 0;
+    }
+
+    if (opt_norailroad) {
+        state->railroad = FALSE;
+        state->tick_ms  = 1000;
+    }
+    /* --railroad (or aliases) overrides --norailroad if both are given */
+    if (opt_railroad)
+        state->railroad = TRUE;
+
+    if (opt_tick > 0.0) {
+        state->tick_ms = (int)(opt_tick * 1000.0);
+        if (state->tick_ms < 16) state->tick_ms = 16;
+    }
+
+    return -1;  /* continue */
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -288,42 +347,18 @@ main(int argc, char *argv[])
         .bg_r = 1.0, .bg_g = 0.98, .bg_b = 0.98,  /* snow1 */
     };
 
-    /* Strip our options from argv before GTK sees them */
-    int new_argc = 1;
-    char **new_argv = g_new(char *, argc + 1);
-    new_argv[0] = argv[0];
-
-    for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-railroad") || !strcmp(argv[i], "-sbb") ||
-            !strcmp(argv[i], "-cff")      || !strcmp(argv[i], "-ffs")) {
-            state.railroad = TRUE;
-        } else if (!strcmp(argv[i], "-norailroad")) {
-            state.railroad = FALSE;
-            state.tick_ms  = 1000;
-        } else if (!strcmp(argv[i], "-circular")) {
-            state.circular = TRUE;
-        } else if (!strcmp(argv[i], "-noshape")) {
-            /* no-op: GTK4 has no shaped-window extension */
-        } else if (!strcmp(argv[i], "-tick") && i + 1 < argc) {
-            double t = atof(argv[++i]);
-            state.tick_ms = (int)(t * 1000.0);
-            if (state.tick_ms < 16) state.tick_ms = 16;
-        } else {
-            new_argv[new_argc++] = argv[i];
-        }
-    }
-    new_argv[new_argc] = NULL;
-
     state.n_children = G_N_ELEMENTS(swisswatch_children);
     state.children   = g_memdup2(swisswatch_children, sizeof(swisswatch_children));
 
     GtkApplication *app = gtk_application_new("org.debian.swisswatch",
-                                               G_APPLICATION_DEFAULT_FLAGS);
+                                               G_APPLICATION_NON_UNIQUE);
+    g_application_add_main_option_entries(G_APPLICATION(app), option_entries);
+    g_signal_connect(app, "handle-local-options", G_CALLBACK(on_handle_local_options), &state);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), &state);
-    int status = g_application_run(G_APPLICATION(app), new_argc, new_argv);
+
+    int status = g_application_run(G_APPLICATION(app), argc, argv);
 
     g_object_unref(app);
-    g_free(new_argv);
     g_free(state.children);
     return status;
 }
