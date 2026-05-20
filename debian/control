@@ -1,10 +1,8 @@
 Source: swisswatch
 Section: x11
-Priority: optional
 Maintainer: Barak A. Pearlmutter <bap@debian.org>
 Build-Depends: debhelper-compat (= 13), libx11-dev, libxext-dev, libxmu-dev, libxt-dev, x11proto-core-dev
-Standards-Version: 4.7.0
-Rules-Requires-Root: no
+Standards-Version: 4.7.4
 Vcs-Git: https://salsa.debian.org/debian/swisswatch.git
 Vcs-Browser: https://salsa.debian.org/debian/swisswatch
 
