@@ -1,8 +1,9 @@
 swisswatch (0.6-20) UNRELEASED; urgency=low
 
-  Update standards version to 4.7.0, no changes needed.
+  * Update standards version to 4.7.0, no changes needed.
+  * Swizzle to new upstream site
 
- -- Barak A. Pearlmutter <bap@debian.org>  Fri, 26 Apr 2024 10:30:55 +0000
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 21 May 2026 14:16:41 +0100
 
 swisswatch (0.6-19) unstable; urgency=medium
 
