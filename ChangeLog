@@ -1,5 +1,24 @@
 2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
 
+	* swisswatch.c (cycle_face): new function; n/N key cycles through all
+	clock faces in order.  Syncs window decoration when shaped state
+	changes between faces; restarts timer only when tick_ms differs.
+	Change apply_face() to take an integer index into faces[]; add
+	face_index field to AppState.  Change find_face() to return int index.
+
+	* swisswatch.h2m, README.md: document n/N keyboard shortcut.
+
+	* swisswatch.c: restore five clock faces from the original SWatch.ad
+	X-resource file, selectable via --name=NAME: swisswatch (default),
+	botta, fancy, swissclock, oclock.  Add FaceConfig struct and faces[]
+	table; apply_face() sets bg colour, railroad/circular/shaped flags,
+	tick interval, and child array.  Add cairo_line_cap_t cap field to
+	Child struct, used by the fancy face for rounded hand endpoints.
+
+	* README.md: add clock-faces table.
+
+2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+
 	* swisswatch.svg, swisswatch.gresource.xml: new files; SVG icon drawn
 	with authentic SBB clock proportions, embedded in the binary via
 	glib-compile-resources so the window icon works before installation.

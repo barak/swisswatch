@@ -9,9 +9,9 @@ be moved by dragging anywhere on the clock face.
 
 ## Features
 
-- Authentic Swiss Railway clock face with smooth second-hand sweep
+- Five clock faces: `swisswatch`, `botta`, `fancy`, `swissclock`, `oclock`
 - Shaped (circular, undecorated) window using compositor transparency
-- Keyboard shortcuts for resizing, fullscreen, and exit
+- Keyboard shortcuts for resizing, fullscreen, and toggling all modes
 - Railroad mode: second hand sweeps 57.5 s then snaps to 12 o'clock,
   minute hand jumps on the minute signal
 - GTK4/Cairo rendering; works on X11 (with compositing) and Wayland
@@ -27,10 +27,21 @@ make
 make install
 ```
 
+## Clock faces
+
+| `--name` | Description |
+|----------|-------------|
+| `swisswatch` | Authentic SBB/CFF/FFS Swiss Railway clock (default) |
+| `botta` | Mario Botta's design for the San Francisco MoMA |
+| `fancy` | Stylised outlined hands on black |
+| `swissclock` | Swiss clock with arrow hands |
+| `oclock` | MIT oclock emulation, minimal two-hand clock |
+
 ## Options
 
 | Option | Description |
 |--------|-------------|
+| `--name=NAME` | Select clock face (see above) |
 | `--noshape` | Standard decorated rectangular window |
 | `--nocircular` | Elliptical face that stretches to fit the window |
 | `--norailroad` | Smooth, continuous second-hand motion |
@@ -46,6 +57,7 @@ make install
 | − | Shrink window by 50 px |
 | f, F, F11 | Toggle fullscreen |
 | r, R | Toggle railroad mode |
+| n, N | Cycle to next clock face |
 | s, S | Toggle shaped mode |
 | c, C | Toggle circular mode|
 

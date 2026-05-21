@@ -14,6 +14,17 @@ window (shaped mode) that floats on the desktop without a title bar.
 The window can be moved by clicking and dragging anywhere on the clock face.
 
 [NOTES]
+The available clock faces and their brief descriptions are listed in the
+.B --name
+option's help text (see
+.BR --help-all ).
+Each face sets its own defaults for background colour, window shape,
+railroad mode, and update rate; individual flags such as
+.B --noshape
+and
+.B --norailroad
+override the face's defaults.
+
 The
 .B --tick
 option controls how often the display is redrawn.
@@ -45,6 +56,11 @@ Toggle fullscreen mode (equivalent to
 .BR r ", " R
 Toggle railroad (Swiss Railway) second-hand mode (equivalent to
 .BR --railroad / --norailroad ).
+.TP
+.BR n ", " N
+Cycle to the next clock face (equivalent to
+.BR --name ),
+restarting the timer if the face's update rate differs.
 .TP
 .BR s ", " S
 Toggle shaped (undecorated, transparent) mode (equivalent to
