@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/debian/swisswatch/icons/hicolor/scalable/apps">
+    <file>swisswatch.svg</file>
+  </gresource>
+</gresources>

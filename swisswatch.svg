@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Swiss Railway clock face, time ~10:10 -->
+  <circle cx="64" cy="64" r="60" fill="#fffafa"/>
+  <line x1="69.64" y1="10.36" x2="70.09" y2="6.06" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="75.21" y1="11.24" x2="76.11" y2="7.01" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="80.67" y1="12.70" x2="82.00" y2="8.59" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="85.94" y1="14.72" x2="87.70" y2="10.78" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="95.71" y1="20.36" x2="98.24" y2="16.87" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="100.09" y1="23.91" x2="102.98" y2="20.70" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="104.09" y1="27.91" x2="107.30" y2="25.02" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="107.64" y1="32.29" x2="111.13" y2="29.76" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="113.28" y1="42.06" x2="117.22" y2="40.30" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="115.30" y1="47.33" x2="119.41" y2="46.00" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="116.76" y1="52.79" x2="120.99" y2="51.89" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="117.64" y1="58.36" x2="121.94" y2="57.91" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="117.64" y1="69.64" x2="121.94" y2="70.09" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="116.76" y1="75.21" x2="120.99" y2="76.11" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="115.30" y1="80.67" x2="119.41" y2="82.00" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="113.28" y1="85.94" x2="117.22" y2="87.70" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="107.64" y1="95.71" x2="111.13" y2="98.24" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="104.09" y1="100.09" x2="107.30" y2="102.98" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="100.09" y1="104.09" x2="102.98" y2="107.30" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="95.71" y1="107.64" x2="98.24" y2="111.13" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="85.94" y1="113.28" x2="87.70" y2="117.22" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="80.67" y1="115.30" x2="82.00" y2="119.41" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="75.21" y1="116.76" x2="76.11" y2="120.99" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="69.64" y1="117.64" x2="70.09" y2="121.94" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="58.36" y1="117.64" x2="57.91" y2="121.94" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="52.79" y1="116.76" x2="51.89" y2="120.99" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="47.33" y1="115.30" x2="46.00" y2="119.41" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="42.06" y1="113.28" x2="40.30" y2="117.22" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="32.29" y1="107.64" x2="29.76" y2="111.13" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="27.91" y1="104.09" x2="25.02" y2="107.30" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="23.91" y1="100.09" x2="20.70" y2="102.98" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="20.36" y1="95.71" x2="16.87" y2="98.24" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="14.72" y1="85.94" x2="10.78" y2="87.70" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="12.70" y1="80.67" x2="8.59" y2="82.00" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="11.24" y1="75.21" x2="7.01" y2="76.11" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="10.36" y1="69.64" x2="6.06" y2="70.09" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="10.36" y1="58.36" x2="6.06" y2="57.91" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="11.24" y1="52.79" x2="7.01" y2="51.89" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="12.70" y1="47.33" x2="8.59" y2="46.00" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="14.72" y1="42.06" x2="10.78" y2="40.30" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="20.36" y1="32.29" x2="16.87" y2="29.76" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="23.91" y1="27.91" x2="20.70" y2="25.02" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="27.91" y1="23.91" x2="25.02" y2="20.70" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="32.29" y1="20.36" x2="29.76" y2="16.87" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="42.06" y1="14.72" x2="40.30" y2="10.78" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="47.33" y1="12.70" x2="46.00" y2="8.59" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="52.79" y1="11.24" x2="51.89" y2="7.01" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="58.36" y1="10.36" x2="57.91" y2="6.06" stroke="#000" stroke-width="1.74" stroke-linecap="butt"/>
+  <line x1="64.00" y1="20.50" x2="64.00" y2="5.74" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="85.75" y1="26.33" x2="93.13" y2="13.55" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="101.67" y1="42.25" x2="114.45" y2="34.87" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="107.50" y1="64.00" x2="122.26" y2="64.00" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="101.67" y1="85.75" x2="114.45" y2="93.13" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="85.75" y1="101.67" x2="93.13" y2="114.45" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="64.00" y1="107.50" x2="64.00" y2="122.26" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="42.25" y1="101.67" x2="34.87" y2="114.45" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="26.33" y1="85.75" x2="13.55" y2="93.13" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="20.50" y1="64.00" x2="5.74" y2="64.00" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="26.33" y1="42.25" x2="13.55" y2="34.87" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <line x1="42.25" y1="26.33" x2="34.87" y2="13.55" stroke="#000" stroke-width="4.32" stroke-linecap="butt"/>
+  <circle cx="64" cy="64" r="59.10" fill="none" stroke="#888" stroke-width="1.74"/>
+  <rect x="-2.37" y="-55.68" width="4.74" height="69.60" fill="#1a1a1a" transform="translate(64,64) rotate(60.0)"/>
+  <rect x="-3.48" y="-38.28" width="6.96" height="52.20" fill="#1a1a1a" transform="translate(64,64) rotate(305.0)"/>
+  <line x1="64.00" y1="83.14" x2="64.00" y2="20.80" stroke="#cc0000" stroke-width="2.58" stroke-linecap="butt"/>
+  <circle cx="64.00" cy="26.98" r="6.51" fill="#cc0000"/>
+  <circle cx="64" cy="64" r="2.16" fill="#cc0000"/>
+  <circle cx="64" cy="64" r="0.60" fill="#888"/>
+</svg>

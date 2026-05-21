@@ -340,9 +340,15 @@ on_activate(GtkApplication *app, gpointer user_data)
 {
     AppState *state = user_data;
 
+    /* Register the embedded SVG so gtk_window_set_icon_name works before install */
+    gtk_icon_theme_add_resource_path(
+        gtk_icon_theme_get_for_display(gdk_display_get_default()),
+        "/org/debian/swisswatch/icons");
+
     state->window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(state->window), "SwissWatch");
     gtk_window_set_default_size(GTK_WINDOW(state->window), 300, 300);
+    gtk_window_set_icon_name(GTK_WINDOW(state->window), "swisswatch");
 
     state->drawing_area = gtk_drawing_area_new();
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(state->drawing_area),
