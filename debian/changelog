@@ -1,9 +1,10 @@
-swisswatch (0.6-20) UNRELEASED; urgency=low
+swisswatch (0.7-1) unstable; urgency=low
 
   * Update standards version to 4.7.0, no changes needed.
   * Swizzle to new upstream site
+  * New upstream version, ported from X11/Xt → GTK4/Cairo
 
- -- Barak A. Pearlmutter <bap@debian.org>  Thu, 21 May 2026 14:16:41 +0100
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 21 May 2026 14:19:26 +0100
 
 swisswatch (0.6-19) unstable; urgency=medium
 

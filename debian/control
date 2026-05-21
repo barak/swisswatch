@@ -1,7 +1,7 @@
 Source: swisswatch
 Section: x11
 Maintainer: Barak A. Pearlmutter <bap@debian.org>
-Build-Depends: debhelper-compat (= 13), libx11-dev, libxext-dev, libxmu-dev, libxt-dev, x11proto-core-dev
+Build-Depends: debhelper-compat (= 13), libgtk-4-dev, autoconf-archive, help2man
 Standards-Version: 4.7.4
 Vcs-Git: https://salsa.debian.org/debian/swisswatch.git
 Vcs-Browser: https://salsa.debian.org/debian/swisswatch
@@ -9,9 +9,5 @@ Vcs-Browser: https://salsa.debian.org/debian/swisswatch
 Package: swisswatch
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Swiss Railway Clock for the X Window System
- Swisswatch is a clock for the X desktop.  It relies heavily on resources for
- configuration, and can be adjusted to a wide range of looks.  While it can be
- configured completely via resources and provides looks for a Botta (SFMoMA)
- clock style, an oclock emulation and other appearances, it defaults to the
- style of a Swiss Railway Clock.
+Description: Swiss Railway Clock
+ Swisswatch clock for GTK4, in the style of a Swiss Railway Clock.
