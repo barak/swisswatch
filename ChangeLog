@@ -1,5 +1,26 @@
 2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
 
+	* swisswatch.svg, swisswatch.gresource.xml: new files; SVG icon drawn
+	with authentic SBB clock proportions, embedded in the binary via
+	glib-compile-resources so the window icon works before installation.
+
+	* swisswatch.c (on_activate): register embedded icon resource path;
+	call gtk_window_set_icon_name.
+
+	* swisswatch.desktop (Icon): change from generic "clock" to "swisswatch".
+
+	* Makefile.am: add glib-compile-resources BUILT_SOURCES step; install
+	swisswatch.svg to hicolor icon theme; run gtk-update-icon-cache in
+	install-data-hook.
+
+	* configure.ac: add AC_PATH_PROG check for glib-compile-resources.
+
+	* swisswatch.c: add --shape, --fullscreen, --nofullscreen options;
+	add r/R (railroad), s/S (shaped), c/C (circular) keyboard toggles;
+	add --nocircular option.
+
+2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+
 	* README.md: rewrite for GTK4 port; rename from README.
 
 	* swisswatch.desktop: new file; installs to $(datadir)/applications.
