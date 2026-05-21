@@ -18,6 +18,10 @@ swisswatch.1: swisswatch$(EXEEXT) $(srcdir)/swisswatch.h2m
 
 man_MANS = swisswatch.1
 CLEANFILES = swisswatch.1
+
+desktopdir = $(datadir)/applications
+dist_desktop_DATA = swisswatch.desktop
+
 EXTRA_DIST = swisswatch.h2m
 
 doc_DATA = README ChangeLog
