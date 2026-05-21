@@ -1,3 +1,27 @@
+2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+
+	* README.md: rewrite for GTK4 port; rename from README.
+
+	* swisswatch.desktop: new file; installs to $(datadir)/applications.
+
+	* swisswatch.h2m, Makefile.am: generate swisswatch.1 with help2man
+	using --help-all; swisswatch.1 is a build artifact, not tracked in git.
+
+	* swisswatch.c: add shaped (undecorated, transparent, circular) window
+	as the default, matching original X11 shaped-window behaviour; add
+	keyboard shortcuts (Escape/q=quit, +/-=resize, F11=fullscreen); add
+	--nocircular option and make --noshape functional.
+
+	* swisswatch.c, configure.ac, Makefile.am: port from Xt/X11 to GTK4
+	and Cairo.  Replace the six-file Xt widget hierarchy (SwissWatch,
+	Hand, Mark, HandOrMark, TableConvert) with a single GtkDrawingArea
+	drawn with Cairo.  Drop X11/Xt/Xmu/Xext build dependencies; add gtk4
+	via pkg-config.  Replace hand-written swisswatch.man with
+	help2man-generated swisswatch.1 using swisswatch.h2m include file.
+	Implement --help and --version via GApplication option entries.
+	Remove all unused X11 source files, headers, Imakefile, and
+	application-defaults (.ad) files.
+
 Sun Jan 17 13:15:46 1993  Logiciels X11  (x11 at liasun6)
 
 	* Hand.c

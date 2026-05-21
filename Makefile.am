@@ -24,4 +24,4 @@ dist_desktop_DATA = swisswatch.desktop
 
 EXTRA_DIST = swisswatch.h2m
 
-doc_DATA = README ChangeLog
+doc_DATA = README.md ChangeLog
