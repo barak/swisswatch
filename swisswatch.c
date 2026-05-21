@@ -31,6 +31,8 @@ typedef struct {
     GtkWidget *drawing_area;
     gboolean   railroad;
     gboolean   circular;
+    gboolean   shaped;        /* undecorated, transparent, round window */
+    gboolean   is_fullscreen;
     int        tick_ms;
     Child     *children;
     int        n_children;
@@ -172,9 +174,7 @@ static void
 draw_watch(GtkDrawingArea *widget, cairo_t *cr, int width, int height, gpointer data)
 {
     AppState *state = data;
-
-    cairo_set_source_rgb(cr, state->bg_r, state->bg_g, state->bg_b);
-    cairo_paint(cr);
+    (void)widget;
 
     double cx = width / 2.0;
     double cy = height / 2.0;
@@ -184,6 +184,23 @@ draw_watch(GtkDrawingArea *widget, cairo_t *cr, int width, int height, gpointer 
         rad_x = rad_y = MIN(cx, cy);
     else
         rad_x = cx, rad_y = cy;
+
+    if (state->shaped) {
+        /* Clear entire surface to transparent, then clip to the clock face */
+        cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+        cairo_paint(cr);
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+        cairo_save(cr);
+        cairo_translate(cr, cx, cy);
+        cairo_scale(cr, rad_x, rad_y);
+        cairo_arc(cr, 0, 0, 1.0, 0, 2 * G_PI);
+        cairo_restore(cr);
+        cairo_clip(cr);
+    }
+
+    cairo_set_source_rgb(cr, state->bg_r, state->bg_g, state->bg_b);
+    cairo_paint(cr);
 
     cairo_save(cr);
     cairo_translate(cr, cx, cy);
@@ -224,6 +241,100 @@ on_tick(gpointer data)
     return G_SOURCE_CONTINUE;
 }
 
+/* --- Window management --- */
+
+static void
+step_size(AppState *state, int delta)
+{
+    if (state->is_fullscreen) return;
+    int w = gtk_widget_get_width(GTK_WIDGET(state->window));
+    int h = gtk_widget_get_height(GTK_WIDGET(state->window));
+    int new_size = MAX(50, MIN(w, h) + delta);
+    /* Clear size request first so the window can shrink, then set new size */
+    gtk_widget_set_size_request(state->drawing_area, -1, -1);
+    gtk_window_set_default_size(GTK_WINDOW(state->window), new_size, new_size);
+}
+
+static void
+toggle_fullscreen(AppState *state)
+{
+    state->is_fullscreen = !state->is_fullscreen;
+    if (state->is_fullscreen)
+        gtk_window_fullscreen(GTK_WINDOW(state->window));
+    else
+        gtk_window_unfullscreen(GTK_WINDOW(state->window));
+}
+
+static void
+toggle_shaped(AppState *state)
+{
+    state->shaped = !state->shaped;
+    gtk_window_set_decorated(GTK_WINDOW(state->window), !state->shaped);
+    if (state->shaped)
+        gtk_widget_add_css_class(GTK_WIDGET(state->window), "swisswatch-shaped");
+    else
+        gtk_widget_remove_css_class(GTK_WIDGET(state->window), "swisswatch-shaped");
+    gtk_widget_queue_draw(state->drawing_area);
+}
+
+static void
+toggle_circular(AppState *state)
+{
+    state->circular = !state->circular;
+    gtk_widget_queue_draw(state->drawing_area);
+}
+
+static void
+toggle_railroad(AppState *state)
+{
+    state->railroad = !state->railroad;
+    gtk_widget_queue_draw(state->drawing_area);
+}
+
+static gboolean
+on_key_pressed(GtkEventController *ctrl, guint keyval, guint keycode,
+               GdkModifierType mods, gpointer data)
+{
+    AppState *state = data;
+    (void)ctrl; (void)keycode; (void)mods;
+
+    switch (keyval) {
+    case GDK_KEY_Escape:
+    case GDK_KEY_q:
+    case GDK_KEY_Q:
+        gtk_window_close(GTK_WINDOW(state->window));
+        return TRUE;
+    case GDK_KEY_plus:
+    case GDK_KEY_equal:
+    case GDK_KEY_KP_Add:
+        step_size(state, +50);
+        return TRUE;
+    case GDK_KEY_minus:
+    case GDK_KEY_underscore:
+    case GDK_KEY_KP_Subtract:
+        step_size(state, -50);
+        return TRUE;
+    case GDK_KEY_f:
+    case GDK_KEY_F:
+    case GDK_KEY_F11:
+        toggle_fullscreen(state);
+        return TRUE;
+    case GDK_KEY_s:
+    case GDK_KEY_S:
+        toggle_shaped(state);
+        return TRUE;
+    case GDK_KEY_c:
+    case GDK_KEY_C:
+        toggle_circular(state);
+        return TRUE;
+    case GDK_KEY_r:
+    case GDK_KEY_R:
+        toggle_railroad(state);
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static void
 on_activate(GtkApplication *app, gpointer user_data)
 {
@@ -236,10 +347,40 @@ on_activate(GtkApplication *app, gpointer user_data)
     state->drawing_area = gtk_drawing_area_new();
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(state->drawing_area),
                                    draw_watch, state, NULL);
-    gtk_window_set_child(GTK_WINDOW(state->window), state->drawing_area);
+
+    /* CSS installed once so toggling shaped at runtime only needs to
+     * add/remove the CSS class and flip gtk_window_set_decorated */
+    GtkCssProvider *css = gtk_css_provider_new();
+    gtk_css_provider_load_from_string(css,
+        "window.swisswatch-shaped { background: transparent; }");
+    gtk_style_context_add_provider_for_display(
+        gdk_display_get_default(),
+        GTK_STYLE_PROVIDER(css),
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(css);
+
+    /* GtkWindowHandle enables drag-to-move when undecorated; harmless when decorated */
+    GtkWidget *handle = gtk_window_handle_new();
+    gtk_window_handle_set_child(GTK_WINDOW_HANDLE(handle), state->drawing_area);
+    gtk_window_set_child(GTK_WINDOW(state->window), handle);
+
+    gtk_window_set_decorated(GTK_WINDOW(state->window), !state->shaped);
+    if (state->shaped)
+        gtk_widget_add_css_class(GTK_WIDGET(state->window), "swisswatch-shaped");
+
+    /* Keyboard shortcuts: capture phase so they fire regardless of focus */
+    GtkEventController *key_ctrl = gtk_event_controller_key_new();
+    gtk_event_controller_set_propagation_phase(
+        GTK_EVENT_CONTROLLER(key_ctrl), GTK_PHASE_CAPTURE);
+    gtk_widget_add_controller(GTK_WIDGET(state->window),
+                              GTK_EVENT_CONTROLLER(key_ctrl));
+    g_signal_connect(key_ctrl, "key-pressed", G_CALLBACK(on_key_pressed), state);
 
     update_time(state);
     state->timer_id = g_timeout_add(state->tick_ms, on_tick, state);
+
+    if (state->is_fullscreen)
+        gtk_window_fullscreen(GTK_WINDOW(state->window));
 
     gtk_window_present(GTK_WINDOW(state->window));
 }
@@ -280,29 +421,41 @@ static const Child swisswatch_children[] = {
 
 /* --- Command-line option storage --- */
 
-static gboolean opt_railroad   = FALSE;
-static gboolean opt_norailroad = FALSE;
-static gboolean opt_circular   = FALSE;
-static gboolean opt_noshape    = FALSE;  /* no-op; accepted for compatibility */
-static gboolean opt_version    = FALSE;
-static gdouble  opt_tick       = 0.0;
+static gboolean opt_railroad    = FALSE;
+static gboolean opt_norailroad  = FALSE;
+static gboolean opt_circular    = FALSE;
+static gboolean opt_nocircular  = FALSE;
+static gboolean opt_shape       = FALSE;
+static gboolean opt_noshape     = FALSE;
+static gboolean opt_fullscreen  = FALSE;
+static gboolean opt_nofullscreen = FALSE;
+static gboolean opt_version     = FALSE;
+static gdouble  opt_tick        = 0.0;
 
 static const GOptionEntry option_entries[] = {
-    { "railroad",   0,   0,                    G_OPTION_ARG_NONE,   &opt_railroad,
+    { "railroad",    0,   0,                    G_OPTION_ARG_NONE,   &opt_railroad,
       "Swiss Railway Clock second-hand mode (default)", NULL },
     /* historical single-letter aliases, hidden from --help */
-    { "sbb",        0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
-    { "cff",        0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
-    { "ffs",        0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
-    { "norailroad", 0,   0,                    G_OPTION_ARG_NONE,   &opt_norailroad,
+    { "sbb",         0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+    { "cff",         0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+    { "ffs",         0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+    { "norailroad",  0,   0,                    G_OPTION_ARG_NONE,   &opt_norailroad,
       "Smooth, continuous second-hand motion", NULL },
-    { "circular",   0,   0,                    G_OPTION_ARG_NONE,   &opt_circular,
+    { "circular",    0,   0,                    G_OPTION_ARG_NONE,   &opt_circular,
       "Keep face circular when window is non-square (default)", NULL },
-    { "noshape",    0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_noshape,
-      NULL, NULL },
-    { "tick",       0,   0,                    G_OPTION_ARG_DOUBLE,  &opt_tick,
+    { "nocircular",  0,   0,                    G_OPTION_ARG_NONE,   &opt_nocircular,
+      "Allow elliptical face when window is non-square", NULL },
+    { "shape",       0,   0,                    G_OPTION_ARG_NONE,   &opt_shape,
+      "Undecorated transparent circular window (default)", NULL },
+    { "noshape",     0,   0,                    G_OPTION_ARG_NONE,   &opt_noshape,
+      "Standard decorated rectangular window", NULL },
+    { "fullscreen",  0,   0,                    G_OPTION_ARG_NONE,   &opt_fullscreen,
+      "Start in fullscreen mode", NULL },
+    { "nofullscreen",0,   0,                    G_OPTION_ARG_NONE,   &opt_nofullscreen,
+      "Start in normal (non-fullscreen) mode (default)", NULL },
+    { "tick",        0,   0,                    G_OPTION_ARG_DOUBLE,  &opt_tick,
       "Update interval in seconds (default: 0.06)", "SECONDS" },
-    { "version",   'V',  0,                    G_OPTION_ARG_NONE,   &opt_version,
+    { "version",    'V',  0,                    G_OPTION_ARG_NONE,   &opt_version,
       "Show version information and exit", NULL },
     { NULL }
 };
@@ -329,6 +482,21 @@ on_handle_local_options(GApplication *app, GVariantDict *options, gpointer user_
     if (opt_railroad)
         state->railroad = TRUE;
 
+    if (opt_nocircular)
+        state->circular = FALSE;
+    if (opt_circular)
+        state->circular = TRUE;
+
+    if (opt_noshape)
+        state->shaped = FALSE;
+    if (opt_shape)
+        state->shaped = TRUE;
+
+    if (opt_fullscreen)
+        state->is_fullscreen = TRUE;
+    if (opt_nofullscreen)
+        state->is_fullscreen = FALSE;
+
     if (opt_tick > 0.0) {
         state->tick_ms = (int)(opt_tick * 1000.0);
         if (state->tick_ms < 16) state->tick_ms = 16;
@@ -343,7 +511,8 @@ main(int argc, char *argv[])
     AppState state = {
         .railroad = TRUE,
         .circular = TRUE,
-        .tick_ms  = 60,       /* 60 ms → smooth second-hand sweep */
+        .shaped   = TRUE,   /* undecorated round window by default */
+        .tick_ms  = 60,     /* 60 ms → smooth second-hand sweep */
         .bg_r = 1.0, .bg_g = 0.98, .bg_b = 0.98,  /* snow1 */
     };
 

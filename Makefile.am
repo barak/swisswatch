@@ -10,6 +10,7 @@ swisswatch_LDADD = $(GTK4_LIBS) -lm
 swisswatch.1: swisswatch$(EXEEXT) $(srcdir)/swisswatch.h2m
 	LC_ALL=C $(HELP2MAN) \
 	  --name="Swiss Railway analog clock" \
+	  --help-option=--help-all \
 	  --no-info \
 	  --include=$(srcdir)/swisswatch.h2m \
 	  ./swisswatch$(EXEEXT) \
