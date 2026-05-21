@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=SwissWatch
+GenericName=Clock
+Comment=Swiss Railway analog clock
+Exec=swisswatch
+Icon=clock
+Type=Application
+Categories=Utility;
+Keywords=clock;time;analog;swiss;railway;sbb;cff;ffs;
+Terminal=false
+StartupNotify=false

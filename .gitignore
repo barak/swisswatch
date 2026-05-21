@@ -1,9 +1,6 @@
 *.o
-/SwissWatch
-/SwissWatch-color
-/aclocal.m4
+.deps/
 /autom4te.cache/
-/build-stamp
 /compile
 /config.h
 /config.h.in
@@ -13,8 +10,9 @@
 /depcomp
 /install-sh
 /missing
-/stamp-h1
 /swisswatch
 /swisswatch.1
 Makefile
 Makefile.in
+aclocal.m4
+stamp-h1
