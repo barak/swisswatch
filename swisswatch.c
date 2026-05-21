@@ -16,14 +16,15 @@ typedef enum { RENDER_OUTLINE, RENDER_FILL } RenderType;
 typedef enum { CHILD_HAND, CHILD_MARK } ChildType;
 
 typedef struct {
-    ChildType  type;
-    double     inner, outer, width, phase;
-    int        cycle;
-    double     stroke_width_r;
-    ShapeStyle shape;
-    RenderType render;
-    double     cx, cy;
-    double     r, g, b;
+    ChildType        type;
+    double           inner, outer, width, phase;
+    int              cycle;
+    double           stroke_width_r;
+    ShapeStyle       shape;
+    RenderType       render;
+    cairo_line_cap_t cap;   /* only affects width=0 line strokes */
+    double           cx, cy;
+    double           r, g, b;
 } Child;
 
 typedef struct {
@@ -34,6 +35,7 @@ typedef struct {
     gboolean   shaped;        /* undecorated, transparent, round window */
     gboolean   is_fullscreen;
     int        tick_ms;
+    int        face_index;   /* index into faces[] for n/N cycling */
     Child     *children;
     int        n_children;
     long       now_local_sec;
@@ -62,7 +64,7 @@ draw_shape(cairo_t *cr, const Child *child, double rad_x, double rad_y,
             cairo_move_to(cr, SX(c * child->inner), SY(s * child->inner));
             cairo_line_to(cr, SX(c * child->outer), SY(s * child->outer));
             cairo_set_line_width(cr, sw);
-            cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+            cairo_set_line_cap(cr, child->cap);
             cairo_stroke(cr);
         } else {
             cairo_move_to(cr, SX(c * child->outer), SY(s * child->outer));
@@ -86,7 +88,7 @@ draw_shape(cairo_t *cr, const Child *child, double rad_x, double rad_y,
             cairo_move_to(cr, SX(c * child->inner), SY(s * child->inner));
             cairo_line_to(cr, SX(c * child->outer), SY(s * child->outer));
             cairo_set_line_width(cr, sw);
-            cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+            cairo_set_line_cap(cr, child->cap);
             cairo_stroke(cr);
         } else {
             cairo_move_to(cr, SX(c * child->inner - s * child->width / 2),
@@ -242,6 +244,7 @@ on_tick(gpointer data)
 }
 
 /* --- Window management --- */
+static void cycle_face(AppState *state);  /* defined after faces[] */
 
 static void
 step_size(AppState *state, int delta)
@@ -331,6 +334,10 @@ on_key_pressed(GtkEventController *ctrl, guint keyval, guint keycode,
     case GDK_KEY_R:
         toggle_railroad(state);
         return TRUE;
+    case GDK_KEY_n:
+    case GDK_KEY_N:
+        cycle_face(state);
+        return TRUE;
     }
     return FALSE;
 }
@@ -391,10 +398,11 @@ on_activate(GtkApplication *app, gpointer user_data)
     gtk_window_present(GTK_WINDOW(state->window));
 }
 
-/*
- * Swiss Railway Clock (SBB/CFF/FFS) — the default configuration.
- * Dimensions from the original SWatch.ad application defaults file.
- */
+/* =========================================================================
+ * Clock face configurations, faithfully ported from SWatch.ad.
+ * ========================================================================= */
+
+/* --- swisswatch: authentic SBB/CFF/FFS Swiss Railway clock --- */
 static const Child swisswatch_children[] = {
     /* Hour marks */
     { CHILD_MARK, .inner=.725, .outer=.971, .width=0,     .cycle=12,    .stroke_width_r=.072,
@@ -406,65 +414,219 @@ static const Child swisswatch_children[] = {
     { CHILD_MARK, .inner=0,    .outer=0,    .width=1.999, .cycle=1,     .stroke_width_r=.029,
       .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=.5, .g=.5, .b=.5 },
     /* Hour hand */
-    { CHILD_HAND, .inner=-.232,.outer=.638, .width=.116,  .cycle=43200, .stroke_width_r=0,
+    { CHILD_HAND, .inner=-.232,.outer=.638, .width=.116,  .cycle=43200,
       .shape=SHAPE_RECTANGLE, .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
     /* Minute hand */
-    { CHILD_HAND, .inner=-.232,.outer=.928, .width=.079,  .cycle=3600,  .stroke_width_r=0,
+    { CHILD_HAND, .inner=-.232,.outer=.928, .width=.079,  .cycle=3600,
       .shape=SHAPE_RECTANGLE, .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
     /* Second hand rod */
     { CHILD_HAND, .inner=-.319,.outer=.720, .width=0,     .cycle=60,    .stroke_width_r=.043,
       .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=1,  .g=0,  .b=0  },
     /* Second hand dot */
-    { CHILD_HAND, .inner=0,    .outer=.617, .width=.217,  .cycle=60,    .stroke_width_r=0,
+    { CHILD_HAND, .inner=0,    .outer=.617, .width=.217,  .cycle=60,
       .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=1,  .g=0,  .b=0  },
     /* Centre cap (red) */
-    { CHILD_HAND, .inner=0,    .outer=0,    .width=.072,  .cycle=1,     .stroke_width_r=0,
+    { CHILD_HAND, .inner=0,    .outer=0,    .width=.072,  .cycle=1,
       .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=1,  .g=0,  .b=0  },
     /* Centre pin (grey) */
-    { CHILD_HAND, .inner=0,    .outer=0,    .width=.02,   .cycle=1,     .stroke_width_r=0,
+    { CHILD_HAND, .inner=0,    .outer=0,    .width=.02,   .cycle=1,
       .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=.5, .g=.5, .b=.5 },
 };
 
+/* --- botta: Mario Botta's design for the San Francisco MoMA --- */
+static const Child botta_children[] = {
+    /* 60 minute tick marks */
+    { CHILD_MARK, .inner=.59,  .outer=.90,  .width=0,     .cycle=60,    .stroke_width_r=.01,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* 4 cardinal spokes from centre to edge */
+    { CHILD_MARK, .inner=0,    .outer=.90,  .width=0,     .cycle=4,     .stroke_width_r=.01,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* Bezel (thick grey ring) */
+    { CHILD_MARK, .inner=0,    .outer=0,    .width=1.999, .cycle=1,     .stroke_width_r=.099,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=.5, .g=.5, .b=.5 },
+    /* Hour hand (grey, wide) */
+    { CHILD_HAND, .inner=-.125,.outer=.425, .width=.15,   .cycle=43200,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_FILL,    .r=.5, .g=.5, .b=.5 },
+    /* Minute hand (black, narrow) */
+    { CHILD_HAND, .inner=-.225,.outer=.7,   .width=.025,  .cycle=3600,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+    /* Centre dot */
+    { CHILD_HAND, .inner=0,    .outer=0,    .width=.1,    .cycle=1,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+    /* Second indicator dot (red) */
+    { CHILD_HAND, .inner=0,    .outer=.725, .width=.15,   .cycle=60,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=1,  .g=0,  .b=0  },
+};
+
+/* --- fancy: stylised clock with rounded outlined hands on black --- */
+#define RND CAIRO_LINE_CAP_ROUND
+static const Child fancy_children[] = {
+    /* 60 fine minute tick marks */
+    { CHILD_MARK, .inner=.79,  .outer=.80,  .width=0,     .cycle=60,    .stroke_width_r=.010,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .cap=RND, .r=1, .g=1, .b=1 },
+    /* 12 longer hour marks */
+    { CHILD_MARK, .inner=.71,  .outer=.80,  .width=0,     .cycle=12,    .stroke_width_r=.020,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .cap=RND, .r=1, .g=1, .b=1 },
+    /* Hour hand shaft */
+    { CHILD_HAND, .inner=-.05, .outer=.40,  .width=0,     .cycle=43200, .stroke_width_r=.100,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .cap=RND, .r=1, .g=1, .b=1 },
+    /* Minute hand shaft */
+    { CHILD_HAND, .inner=-.05, .outer=.60,  .width=0,     .cycle=3600,  .stroke_width_r=.075,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .cap=RND, .r=1, .g=1, .b=1 },
+    /* Hour hand inner accent */
+    { CHILD_HAND, .inner=.30,  .outer=.38,  .width=0,     .cycle=43200, .stroke_width_r=.050,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .cap=RND, .r=1, .g=1, .b=1 },
+    /* Minute hand inner accent */
+    { CHILD_HAND, .inner=.50,  .outer=.58,  .width=0,     .cycle=3600,  .stroke_width_r=.0375,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .cap=RND, .r=1, .g=1, .b=1 },
+    /* Second indicator dot */
+    { CHILD_HAND, .inner=0,    .outer=.575, .width=.15,   .cycle=60,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,              .r=1, .g=1, .b=1 },
+};
+#undef RND
+
+/* --- swissclock: Swiss clock with arrow hands, railroad mode --- */
+static const Child swissclock_children[] = {
+    /* 60 minute marks */
+    { CHILD_MARK, .inner=.90,  .outer=.95,  .width=0,     .cycle=60,    .stroke_width_r=.03,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* 12 hour marks */
+    { CHILD_MARK, .inner=.82,  .outer=.95,  .width=0,     .cycle=12,    .stroke_width_r=.03,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* Bezel ring */
+    { CHILD_MARK, .inner=0,    .outer=0,    .width=1.99,  .cycle=1,     .stroke_width_r=.03,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* Hour hand (arrow) */
+    { CHILD_HAND, .inner=-.18, .outer=.60,  .width=.10,   .cycle=43200,
+      .shape=SHAPE_ARROW,     .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+    /* Minute hand (arrow) */
+    { CHILD_HAND, .inner=-.18, .outer=.81,  .width=.08,   .cycle=3600,
+      .shape=SHAPE_ARROW,     .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+    /* Second hand rod */
+    { CHILD_HAND, .inner=-.26, .outer=.78,  .width=0,     .cycle=60,    .stroke_width_r=.03,
+      .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* Second dot */
+    { CHILD_HAND, .inner=0,    .outer=.78,  .width=.20,   .cycle=60,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+};
+
+/* --- oclock: MIT oclock emulation, minimal arrow-hand clock --- */
+static const Child oclock_children[] = {
+    /* Single dot at 12 o'clock */
+    { CHILD_MARK, .inner=.825, .outer=.825, .width=.075,  .cycle=1,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+    /* Clock ring */
+    { CHILD_MARK, .inner=0,    .outer=0,    .width=1.9,   .cycle=1,     .stroke_width_r=.1,
+      .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
+    /* Hour hand (arrow) */
+    { CHILD_HAND, .inner=0,    .outer=.45,  .width=.09,   .cycle=43200,
+      .shape=SHAPE_ARROW,     .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+    /* Minute hand (arrow) */
+    { CHILD_HAND, .inner=0,    .outer=.72,  .width=.09,   .cycle=3600,
+      .shape=SHAPE_ARROW,     .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
+};
+
+/* --- Face configuration table --- */
+
+typedef struct {
+    const char  *name;
+    const char  *desc;   /* brief description shown in --help and error messages */
+    double       bg_r, bg_g, bg_b;
+    gboolean     railroad;
+    gboolean     circular;
+    gboolean     shaped;
+    int          tick_ms;
+    const Child *children;
+    int          n_children;
+} FaceConfig;
+
+static const FaceConfig faces[] = {
+    { "swisswatch", "authentic SBB/CFF/FFS Swiss Railway clock",
+      1.0, 0.98, 0.98, TRUE,  TRUE,  TRUE,  60,
+      swisswatch_children, G_N_ELEMENTS(swisswatch_children) },
+    { "botta",      "Mario Botta's SF MoMA design",
+      1.0, 0.98, 0.98, FALSE, TRUE,  TRUE,  1000,
+      botta_children,      G_N_ELEMENTS(botta_children)      },
+    { "fancy",      "stylised outlined hands on black",
+      0.0, 0.0,  0.0,  FALSE, TRUE,  TRUE,  1000,
+      fancy_children,      G_N_ELEMENTS(fancy_children)      },
+    { "swissclock", "arrow hands, railroad mode",
+      1.0, 0.98, 0.98, TRUE,  TRUE,  TRUE,  60,
+      swissclock_children, G_N_ELEMENTS(swissclock_children) },
+    { "oclock",     "MIT oclock emulation, no second hand",
+      1.0, 0.98, 0.98, FALSE, TRUE,  TRUE,  60000,
+      oclock_children,     G_N_ELEMENTS(oclock_children)     },
+};
+#define N_FACES ((int) G_N_ELEMENTS(faces))
+
+/* Returns index into faces[], or -1 if not found */
+static int
+find_face(const char *name)
+{
+    for (int i = 0; i < N_FACES; i++)
+        if (strcmp(faces[i].name, name) == 0)
+            return i;
+    return -1;
+}
+
+static void
+apply_face(AppState *state, int idx)
+{
+    const FaceConfig *face = &faces[idx];
+    state->face_index = idx;
+    g_free(state->children);
+    state->bg_r       = face->bg_r;
+    state->bg_g       = face->bg_g;
+    state->bg_b       = face->bg_b;
+    state->railroad   = face->railroad;
+    state->circular   = face->circular;
+    state->shaped     = face->shaped;
+    state->tick_ms    = face->tick_ms;
+    state->n_children = face->n_children;
+    state->children   = g_memdup2(face->children,
+                                   face->n_children * sizeof(Child));
+}
+
 /* --- Command-line option storage --- */
 
-static gboolean opt_railroad    = FALSE;
-static gboolean opt_norailroad  = FALSE;
-static gboolean opt_circular    = FALSE;
-static gboolean opt_nocircular  = FALSE;
-static gboolean opt_shape       = FALSE;
-static gboolean opt_noshape     = FALSE;
-static gboolean opt_fullscreen  = FALSE;
-static gboolean opt_nofullscreen = FALSE;
-static gboolean opt_version     = FALSE;
-static gdouble  opt_tick        = 0.0;
+static void
+cycle_face(AppState *state)
+{
+    gboolean was_shaped  = state->shaped;
+    int      old_tick_ms = state->tick_ms;
 
-static const GOptionEntry option_entries[] = {
-    { "railroad",    0,   0,                    G_OPTION_ARG_NONE,   &opt_railroad,
-      "Swiss Railway Clock second-hand mode (default)", NULL },
-    /* historical single-letter aliases, hidden from --help */
-    { "sbb",         0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
-    { "cff",         0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
-    { "ffs",         0,   G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
-    { "norailroad",  0,   0,                    G_OPTION_ARG_NONE,   &opt_norailroad,
-      "Smooth, continuous second-hand motion", NULL },
-    { "circular",    0,   0,                    G_OPTION_ARG_NONE,   &opt_circular,
-      "Keep face circular when window is non-square (default)", NULL },
-    { "nocircular",  0,   0,                    G_OPTION_ARG_NONE,   &opt_nocircular,
-      "Allow elliptical face when window is non-square", NULL },
-    { "shape",       0,   0,                    G_OPTION_ARG_NONE,   &opt_shape,
-      "Undecorated transparent circular window (default)", NULL },
-    { "noshape",     0,   0,                    G_OPTION_ARG_NONE,   &opt_noshape,
-      "Standard decorated rectangular window", NULL },
-    { "fullscreen",  0,   0,                    G_OPTION_ARG_NONE,   &opt_fullscreen,
-      "Start in fullscreen mode", NULL },
-    { "nofullscreen",0,   0,                    G_OPTION_ARG_NONE,   &opt_nofullscreen,
-      "Start in normal (non-fullscreen) mode (default)", NULL },
-    { "tick",        0,   0,                    G_OPTION_ARG_DOUBLE,  &opt_tick,
-      "Update interval in seconds (default: 0.06)", "SECONDS" },
-    { "version",    'V',  0,                    G_OPTION_ARG_NONE,   &opt_version,
-      "Show version information and exit", NULL },
-    { NULL }
-};
+    apply_face(state, (state->face_index + 1) % N_FACES);
+
+    /* Sync window decoration if shaped changed */
+    if (state->shaped != was_shaped) {
+        gtk_window_set_decorated(GTK_WINDOW(state->window), !state->shaped);
+        if (state->shaped)
+            gtk_widget_add_css_class(GTK_WIDGET(state->window), "swisswatch-shaped");
+        else
+            gtk_widget_remove_css_class(GTK_WIDGET(state->window), "swisswatch-shaped");
+    }
+
+    /* Restart timer only if the update interval changed */
+    if (state->tick_ms != old_tick_ms) {
+        g_source_remove(state->timer_id);
+        state->timer_id = g_timeout_add(state->tick_ms, on_tick, state);
+    }
+
+    gtk_widget_queue_draw(state->drawing_area);
+}
+
+/* Option storage — must be static so on_handle_local_options can read them */
+static gboolean opt_railroad     = FALSE;
+static gboolean opt_norailroad   = FALSE;
+static gboolean opt_circular     = FALSE;
+static gboolean opt_nocircular   = FALSE;
+static gboolean opt_shape        = FALSE;
+static gboolean opt_noshape      = FALSE;
+static gboolean opt_fullscreen   = FALSE;
+static gboolean opt_nofullscreen = FALSE;
+static gboolean opt_version      = FALSE;
+static gdouble  opt_tick         = 0.0;
+static gchar   *opt_name         = NULL;
 
 static int
 on_handle_local_options(GApplication *app, GVariantDict *options, gpointer user_data)
@@ -480,11 +642,28 @@ on_handle_local_options(GApplication *app, GVariantDict *options, gpointer user_
         return 0;
     }
 
+    /* Face selection first — establishes the baseline all other options override */
+    if (opt_name) {
+        int idx = find_face(opt_name);
+        if (idx < 0) {
+            GString *avail = g_string_new(NULL);
+            for (int i = 0; i < N_FACES; i++) {
+                if (i > 0) g_string_append(avail, ", ");
+                g_string_append(avail, faces[i].name);
+            }
+            g_printerr("%s: unknown face '%s'; available: %s\n",
+                       PACKAGE_NAME, opt_name, avail->str);
+            g_string_free(avail, TRUE);
+            return 1;
+        }
+        apply_face(state, idx);
+    }
+
+    /* Per-option overrides on top of face defaults */
     if (opt_norailroad) {
         state->railroad = FALSE;
-        state->tick_ms  = 1000;
+        if (opt_tick == 0.0) state->tick_ms = 1000;
     }
-    /* --railroad (or aliases) overrides --norailroad if both are given */
     if (opt_railroad)
         state->railroad = TRUE;
 
@@ -514,26 +693,66 @@ on_handle_local_options(GApplication *app, GVariantDict *options, gpointer user_
 int
 main(int argc, char *argv[])
 {
-    AppState state = {
-        .railroad = TRUE,
-        .circular = TRUE,
-        .shaped   = TRUE,   /* undecorated round window by default */
-        .tick_ms  = 60,     /* 60 ms → smooth second-hand sweep */
-        .bg_r = 1.0, .bg_g = 0.98, .bg_b = 0.98,  /* snow1 */
-    };
+    AppState state = { 0 };
+    apply_face(&state, 0);
 
-    state.n_children = G_N_ELEMENTS(swisswatch_children);
-    state.children   = g_memdup2(swisswatch_children, sizeof(swisswatch_children));
+    /* Short --name description; face list goes in the --help footer below */
+    gchar *name_desc = g_strdup_printf("clock face (default: %s)", faces[0].name);
+
+    /* Build the face list shown at the bottom of --help output */
+    int nw = 0;
+    for (int i = 0; i < N_FACES; i++)
+        nw = MAX(nw, (int)strlen(faces[i].name));
+    GString *footer = g_string_new("Available clock faces:\n");
+    for (int i = 0; i < N_FACES; i++)
+        g_string_append_printf(footer, "  %-*s  %s%s\n",
+                               nw, faces[i].name, faces[i].desc,
+                               i == 0 ? " (default)" : "");
+    gchar *footer_str = g_string_free(footer, FALSE);
+
+    /* option_entries is local so name_desc (heap) can serve as description pointer */
+    GOptionEntry entries[] = {
+        { "name",       0,  0,                    G_OPTION_ARG_STRING, &opt_name,
+          name_desc, "NAME" },
+        { "railroad",   0,  0,                    G_OPTION_ARG_NONE,   &opt_railroad,
+          "Swiss Railway Clock second-hand mode", NULL },
+        /* historical single-letter aliases, hidden from --help */
+        { "sbb",        0,  G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+        { "cff",        0,  G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+        { "ffs",        0,  G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,   &opt_railroad,   NULL, NULL },
+        { "norailroad", 0,  0,                    G_OPTION_ARG_NONE,   &opt_norailroad,
+          "Smooth, continuous second-hand motion", NULL },
+        { "circular",   0,  0,                    G_OPTION_ARG_NONE,   &opt_circular,
+          "Keep face circular when window is non-square", NULL },
+        { "nocircular", 0,  0,                    G_OPTION_ARG_NONE,   &opt_nocircular,
+          "Allow elliptical face when window is non-square", NULL },
+        { "shape",      0,  0,                    G_OPTION_ARG_NONE,   &opt_shape,
+          "Undecorated transparent circular window", NULL },
+        { "noshape",    0,  0,                    G_OPTION_ARG_NONE,   &opt_noshape,
+          "Standard decorated rectangular window", NULL },
+        { "fullscreen", 0,  0,                    G_OPTION_ARG_NONE,   &opt_fullscreen,
+          "Start in fullscreen mode", NULL },
+        { "nofullscreen",0, 0,                    G_OPTION_ARG_NONE,   &opt_nofullscreen,
+          "Start in normal (non-fullscreen) mode (default)", NULL },
+        { "tick",       0,  0,                    G_OPTION_ARG_DOUBLE,  &opt_tick,
+          "Update interval in seconds", "SECONDS" },
+        { "version",   'V', 0,                    G_OPTION_ARG_NONE,   &opt_version,
+          "Show version information and exit", NULL },
+        { NULL }
+    };
 
     GtkApplication *app = gtk_application_new("org.debian.swisswatch",
                                                G_APPLICATION_NON_UNIQUE);
-    g_application_add_main_option_entries(G_APPLICATION(app), option_entries);
+    g_application_set_option_context_description(G_APPLICATION(app), footer_str);
+    g_free(footer_str);
+    g_application_add_main_option_entries(G_APPLICATION(app), entries);
     g_signal_connect(app, "handle-local-options", G_CALLBACK(on_handle_local_options), &state);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), &state);
 
     int status = g_application_run(G_APPLICATION(app), argc, argv);
 
     g_object_unref(app);
+    g_free(name_desc);
     g_free(state.children);
     return status;
 }

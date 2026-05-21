@@ -1,5 +1,45 @@
 2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
 
+	* swisswatch.c (cycle_face): new function; n/N key cycles through all
+	clock faces in order.  Syncs window decoration when shaped state
+	changes between faces; restarts timer only when tick_ms differs.
+	Change apply_face() to take an integer index into faces[]; add
+	face_index field to AppState.  Change find_face() to return int index.
+
+	* swisswatch.h2m, README.md: document n/N keyboard shortcut.
+
+	* swisswatch.c: restore five clock faces from the original SWatch.ad
+	X-resource file, selectable via --name=NAME: swisswatch (default),
+	botta, fancy, swissclock, oclock.  Add FaceConfig struct and faces[]
+	table; apply_face() sets bg colour, railroad/circular/shaped flags,
+	tick interval, and child array.  Add cairo_line_cap_t cap field to
+	Child struct, used by the fancy face for rounded hand endpoints.
+
+	* README.md: add clock-faces table.
+
+2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+
+	* swisswatch.svg, swisswatch.gresource.xml: new files; SVG icon drawn
+	with authentic SBB clock proportions, embedded in the binary via
+	glib-compile-resources so the window icon works before installation.
+
+	* swisswatch.c (on_activate): register embedded icon resource path;
+	call gtk_window_set_icon_name.
+
+	* swisswatch.desktop (Icon): change from generic "clock" to "swisswatch".
+
+	* Makefile.am: add glib-compile-resources BUILT_SOURCES step; install
+	swisswatch.svg to hicolor icon theme; run gtk-update-icon-cache in
+	install-data-hook.
+
+	* configure.ac: add AC_PATH_PROG check for glib-compile-resources.
+
+	* swisswatch.c: add --shape, --fullscreen, --nofullscreen options;
+	add r/R (railroad), s/S (shaped), c/C (circular) keyboard toggles;
+	add --nocircular option.
+
+2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+
 	* README.md: rewrite for GTK4 port; rename from README.
 
 	* swisswatch.desktop: new file; installs to $(datadir)/applications.
