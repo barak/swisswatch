@@ -12,6 +12,7 @@
 /missing
 /swisswatch
 /swisswatch.1
+/swisswatch_resources.c
 Makefile
 Makefile.in
 aclocal.m4

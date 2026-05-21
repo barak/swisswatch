@@ -22,6 +22,9 @@ AC_CHECK_MEMBERS([struct tm.tm_gmtoff],[AC_DEFINE([HAVE_GMTOFF],[1],[Define to 1
 ])
 
 AM_MISSING_PROG([HELP2MAN], [help2man])
+AC_PATH_PROG([GLIB_COMPILE_RESOURCES], [glib-compile-resources])
+AS_IF([test -z "$GLIB_COMPILE_RESOURCES"],
+    [AC_MSG_ERROR([glib-compile-resources not found; install libglib2.0-dev])])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
