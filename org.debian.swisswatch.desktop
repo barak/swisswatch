@@ -9,3 +9,4 @@ Categories=Utility;
 Keywords=clock;time;analog;swiss;railway;sbb;cff;ffs;
 Terminal=false
 StartupNotify=false
+StartupWMClass=Swisswatch

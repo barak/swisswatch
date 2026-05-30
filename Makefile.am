@@ -25,7 +25,7 @@ man_MANS = swisswatch.1
 CLEANFILES = swisswatch.1 swisswatch_resources.c
 
 desktopdir = $(datadir)/applications
-dist_desktop_DATA = swisswatch.desktop
+dist_desktop_DATA = org.debian.swisswatch.desktop
 
 iconsdir = $(datadir)/icons/hicolor/scalable/apps
 dist_icons_DATA = swisswatch.svg

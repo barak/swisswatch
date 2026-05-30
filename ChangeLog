@@ -1,3 +1,12 @@
+2026-05-30  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+
+	* org.debian.swisswatch.desktop: rename from swisswatch.desktop so
+	GNOME Shell can match the running app (whose GtkApplication ID is
+	org.debian.swisswatch) to the desktop entry on Wayland; add
+	StartupWMClass=Swisswatch for X11 compatibility.
+
+	* Makefile.am (dist_desktop_DATA): reference renamed desktop file.
+
 2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
 
 	* swisswatch.c (cycle_face): new function; n/N key cycles through all
