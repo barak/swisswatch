@@ -66,3 +66,10 @@ make install
 Originally written by Simon Leinen (EPFL) in 1992 as an Xt/X11
 application, inspired by Der Mouse's *mclock* program.
 Ported to GTK4/Cairo by Barak A. Pearlmutter in 2026.
+
+Upstream home: <https://github.com/barak/swisswatch>.
+Please report bugs there.
+
+## License
+
+X11 license; see [LICENSE](LICENSE).

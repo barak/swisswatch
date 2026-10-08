@@ -1,3 +1,29 @@
+2026-10-08  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+
+	* configure.ac (AC_INIT): version 0.7.2; add bug-report and home
+	page URLs pointing to https://github.com/barak/swisswatch.
+
+	* io.github.barak.swisswatch.desktop: rename from
+	org.debian.swisswatch.desktop, since upstream is no longer hosted
+	by Debian.
+	* swisswatch.c (main): application ID io.github.barak.swisswatch.
+	* swisswatch.c (on_activate), swisswatch.gresource.xml: move
+	resource prefix to /io/github/barak/swisswatch.
+
+	* swisswatch.c (on_handle_local_options): --version now states the
+	actual X11 license and copyright holders, not GPLv2+.
+	* LICENSE: new file, X11 license text.
+	* README.md: note upstream home and license.
+
+	* swisswatch.h2m [REPORTING BUGS]: point to GitHub issues.
+
+	* Makefile.am (install-data-hook): do not generate an icon cache
+	when installing into a staging DESTDIR.
+	(AM_DISTCHECK_CONFIGURE_FLAGS): disable icon cache update.
+	* configure.ac (GTK_UPDATE_ICON_CACHE): new precious variable.
+	(ACLOCAL_AMFLAGS): remove; there is no m4 directory.
+	(EXTRA_DIST): add LICENSE.
+
 2026-05-30  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
 
 	* org.debian.swisswatch.desktop: rename from swisswatch.desktop so
