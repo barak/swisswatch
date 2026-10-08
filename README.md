@@ -10,6 +10,7 @@ be moved by dragging anywhere on the clock face.
 ## Features
 
 - Five clock faces: `swisswatch`, `botta`, `fancy`, `swissclock`, `oclock`
+- `--tz` shows another time zone, with its name on the clock face
 - Shaped (circular, undecorated) window using compositor transparency
 - Keyboard shortcuts for resizing, fullscreen, and toggling all modes
 - Railroad mode: second hand sweeps 57.5 s then snaps to 12 o'clock,
@@ -45,6 +46,7 @@ make install
 | `--noshape` | Standard decorated rectangular window |
 | `--nocircular` | Elliptical face that stretches to fit the window |
 | `--norailroad` | Smooth, continuous second-hand motion |
+| `--tz=ZONE` | Show time in another zone, e.g. `--tz=Asia/Tokyo`, labelled on the face |
 | `--tick=SECONDS` | Update interval (default: 0.06 s) |
 | `--fullscreen` | Start in fullscreen mode |
 

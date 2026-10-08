@@ -41,6 +41,15 @@ typedef struct {
     long       now_local_sec;
     double     frac_sec;
     double     bg_r, bg_g, bg_b;
+    double     dial_scale;   /* shrink dial contents to fit inside the bezel */
+    double     bezel_w;      /* bezel stroke width in dial units; 0 = none */
+    double     bezel_r, bezel_g, bezel_b;
+    double     label_clear_r;   /* radius of the label-safe area, dial units */
+    const char *label_font;
+    double     label_y, label_size;   /* dial units, y measured up from centre */
+    double     label_r, label_g, label_b;
+    gchar     *label;        /* time zone label drawn on the face, or NULL */
+    GTimeZone *tz;           /* NULL means local time */
     guint      timer_id;
 } AppState;
 
@@ -172,6 +181,87 @@ draw_hand(cairo_t *cr, const Child *child, long now_local_sec, double frac_sec,
     draw_shape(cr, child, rad_x, rad_y, sin(G_PI_2 - ang), cos(G_PI_2 - ang));
 }
 
+/* Largest k <= 1 such that the layout's ink box, scaled by k and centred
+ * label_y above the clock centre, stays inside the label-safe circle */
+static double
+label_fit(PangoLayout *layout, const AppState *state, double R)
+{
+    PangoRectangle ink;
+    pango_layout_get_extents(layout, &ink, NULL);
+    double w = (double)ink.width  / PANGO_SCALE / R;
+    double h = (double)ink.height / PANGO_SCALE / R;
+    double y = state->label_y;
+    double r = state->label_clear_r - 0.04;
+    /* corners (k w/2, y + k h/2) on radius r: a k^2 + b k + c = 0 */
+    double a = (w * w + h * h) / 4, b = y * h, c = y * y - r * r;
+    if (a <= 0) return 1.0;
+    if (c >= 0) return 0.0;
+    return MIN(1.0, (-b + sqrt(b * b - 4 * a * c)) / (2 * a));
+}
+
+/* Time zone label, centred label_y above the clock centre and shrunk as
+ * needed to stay inside the clear area within the marks; a long name is
+ * broken after its last '/' if that lets it be drawn larger.  Drawn under
+ * the hands, with a halo in the face colour to knock out any marks it
+ * crosses. */
+static void
+draw_label(cairo_t *cr, const AppState *state, double rad_x, double rad_y)
+{
+    double R = MIN(rad_x, rad_y);
+    if (R < 1.0) return;
+
+    cairo_save(cr);
+    cairo_font_options_t *fo = cairo_font_options_create();
+    cairo_font_options_set_hint_metrics(fo, CAIRO_HINT_METRICS_OFF);
+    cairo_font_options_set_hint_style(fo, CAIRO_HINT_STYLE_NONE);
+    cairo_set_font_options(cr, fo);
+    cairo_font_options_destroy(fo);
+
+    PangoLayout *layout = pango_cairo_create_layout(cr);
+    PangoFontDescription *desc = pango_font_description_from_string(state->label_font);
+    double size = state->label_size * R;
+    pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
+    pango_layout_set_font_description(layout, desc);
+    pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+
+    pango_layout_set_text(layout, state->label, -1);
+    double k = label_fit(layout, state, R);
+    const char *slash = strrchr(state->label, '/');
+    if (k < 0.8 && slash && slash[1]) {
+        gchar *split = g_strdup_printf("%.*s\n%s", (int)(slash - state->label + 1),
+                                       state->label, slash + 1);
+        pango_layout_set_text(layout, split, -1);
+        double k2 = label_fit(layout, state, R);
+        if (k2 > k)
+            k = k2;
+        else
+            pango_layout_set_text(layout, state->label, -1);
+        g_free(split);
+    }
+    if (k < 1.0) {
+        size *= k;
+        pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
+        pango_layout_set_font_description(layout, desc);
+    }
+
+    PangoRectangle ink;
+    pango_layout_get_extents(layout, &ink, NULL);
+    cairo_move_to(cr,
+                  -(ink.x + ink.width / 2.0) / PANGO_SCALE,
+                  -state->label_y * rad_y - (ink.y + ink.height / 2.0) / PANGO_SCALE);
+    pango_cairo_layout_path(cr, layout);
+    cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+    cairo_set_line_width(cr, 0.12 * size);
+    cairo_set_source_rgb(cr, state->bg_r, state->bg_g, state->bg_b);
+    cairo_stroke_preserve(cr);
+    cairo_set_source_rgb(cr, state->label_r, state->label_g, state->label_b);
+    cairo_fill(cr);
+
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+    cairo_restore(cr);
+}
+
 static void
 draw_watch(GtkDrawingArea *widget, cairo_t *cr, int width, int height, gpointer data)
 {
@@ -207,9 +297,29 @@ draw_watch(GtkDrawingArea *widget, cairo_t *cr, int width, int height, gpointer 
     cairo_save(cr);
     cairo_translate(cr, cx, cy);
 
+    /* Bezel: same stroke width as the (scaled) hour marks, lying
+     * entirely inside the face so a shaped window does not clip it */
+    if (state->bezel_w > 0) {
+        double bw = state->bezel_w * state->dial_scale;
+        cairo_save(cr);
+        cairo_scale(cr, rad_x, rad_y);
+        cairo_arc(cr, 0, 0, 1.0 - bw / 2, 0, 2 * G_PI);
+        cairo_restore(cr);
+        cairo_set_line_width(cr, bw * sqrt(rad_x * rad_y));
+        cairo_set_source_rgb(cr, state->bezel_r, state->bezel_g, state->bezel_b);
+        cairo_stroke(cr);
+    }
+
+    /* Everything else is drawn in the dial frame, shrunk to fit the bezel */
+    rad_x *= state->dial_scale;
+    rad_y *= state->dial_scale;
+
     for (int i = 0; i < state->n_children; i++)
         if (state->children[i].type == CHILD_MARK)
             draw_mark(cr, &state->children[i], rad_x, rad_y);
+
+    if (state->label && *state->label)
+        draw_label(cr, state, rad_x, rad_y);
 
     for (int i = 0; i < state->n_children; i++)
         if (state->children[i].type == CHILD_HAND)
@@ -224,6 +334,12 @@ update_time(AppState *state)
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
+    state->frac_sec = tv.tv_usec * 1e-6;
+    if (state->tz) {
+        int iv = g_time_zone_find_interval(state->tz, G_TIME_TYPE_UNIVERSAL, tv.tv_sec);
+        state->now_local_sec = tv.tv_sec + g_time_zone_get_offset(state->tz, iv);
+        return;
+    }
     struct tm *tm = localtime(&tv.tv_sec);
 #ifdef HAVE_GMTOFF
     state->now_local_sec = tv.tv_sec + tm->tm_gmtoff;
@@ -231,7 +347,6 @@ update_time(AppState *state)
     state->now_local_sec = tm->tm_sec + tm->tm_min * 60
                          + tm->tm_hour * 3600 + (long)tm->tm_mday * 86400;
 #endif
-    state->frac_sec = tv.tv_usec * 1e-6;
 }
 
 static gboolean
@@ -353,7 +468,13 @@ on_activate(GtkApplication *app, gpointer user_data)
         "/io/github/barak/swisswatch/icons");
 
     state->window = gtk_application_window_new(app);
-    gtk_window_set_title(GTK_WINDOW(state->window), "SwissWatch");
+    if (state->label) {
+        gchar *title = g_strdup_printf("SwissWatch — %s", state->label);
+        gtk_window_set_title(GTK_WINDOW(state->window), title);
+        g_free(title);
+    } else {
+        gtk_window_set_title(GTK_WINDOW(state->window), "SwissWatch");
+    }
     gtk_window_set_default_size(GTK_WINDOW(state->window), 300, 300);
     gtk_window_set_icon_name(GTK_WINDOW(state->window), "swisswatch");
 
@@ -410,9 +531,6 @@ static const Child swisswatch_children[] = {
     /* Minute marks */
     { CHILD_MARK, .inner=.899, .outer=.971, .width=0,     .cycle=60,    .stroke_width_r=.029,
       .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
-    /* Clock bezel */
-    { CHILD_MARK, .inner=0,    .outer=0,    .width=1.999, .cycle=1,     .stroke_width_r=.029,
-      .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=.5, .g=.5, .b=.5 },
     /* Hour hand */
     { CHILD_HAND, .inner=-.232,.outer=.638, .width=.116,  .cycle=43200,
       .shape=SHAPE_RECTANGLE, .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
@@ -441,9 +559,6 @@ static const Child botta_children[] = {
     /* 4 cardinal spokes from centre to edge */
     { CHILD_MARK, .inner=0,    .outer=.90,  .width=0,     .cycle=4,     .stroke_width_r=.01,
       .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
-    /* Bezel (thick grey ring) */
-    { CHILD_MARK, .inner=0,    .outer=0,    .width=1.999, .cycle=1,     .stroke_width_r=.099,
-      .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=.5, .g=.5, .b=.5 },
     /* Hour hand (grey, wide) */
     { CHILD_HAND, .inner=-.125,.outer=.425, .width=.15,   .cycle=43200,
       .shape=SHAPE_RECTANGLE, .render=RENDER_FILL,    .r=.5, .g=.5, .b=.5 },
@@ -493,9 +608,6 @@ static const Child swissclock_children[] = {
     /* 12 hour marks */
     { CHILD_MARK, .inner=.82,  .outer=.95,  .width=0,     .cycle=12,    .stroke_width_r=.03,
       .shape=SHAPE_RECTANGLE, .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
-    /* Bezel ring */
-    { CHILD_MARK, .inner=0,    .outer=0,    .width=1.99,  .cycle=1,     .stroke_width_r=.03,
-      .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
     /* Hour hand (arrow) */
     { CHILD_HAND, .inner=-.18, .outer=.60,  .width=.10,   .cycle=43200,
       .shape=SHAPE_ARROW,     .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
@@ -515,9 +627,6 @@ static const Child oclock_children[] = {
     /* Single dot at 12 o'clock */
     { CHILD_MARK, .inner=.825, .outer=.825, .width=.075,  .cycle=1,
       .shape=SHAPE_CIRCLE,    .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
-    /* Clock ring */
-    { CHILD_MARK, .inner=0,    .outer=0,    .width=1.9,   .cycle=1,     .stroke_width_r=.1,
-      .shape=SHAPE_CIRCLE,    .render=RENDER_OUTLINE, .r=0,  .g=0,  .b=0  },
     /* Hour hand (arrow) */
     { CHILD_HAND, .inner=0,    .outer=.45,  .width=.09,   .cycle=43200,
       .shape=SHAPE_ARROW,     .render=RENDER_FILL,    .r=0,  .g=0,  .b=0  },
@@ -538,25 +647,44 @@ typedef struct {
     int          tick_ms;
     const Child *children;
     int          n_children;
+    double       bezel_w;      /* 0 = no bezel; else matches the hour marks */
+    double       bezel_r, bezel_g, bezel_b;
+    const char  *label_font;   /* Pango font family and style for --tz */
+    double       label_y, label_size;
+    double       label_r, label_g, label_b;
 } FaceConfig;
+
+#define FACE_CHILDREN(c) .children = c, .n_children = G_N_ELEMENTS(c)
 
 static const FaceConfig faces[] = {
     { "swisswatch", "authentic SBB/CFF/FFS Swiss Railway clock",
       1.0, 0.98, 0.98, TRUE,  TRUE,  TRUE,  60,
-      swisswatch_children, G_N_ELEMENTS(swisswatch_children) },
+      FACE_CHILDREN(swisswatch_children),
+      .bezel_w = .072, .bezel_r = .3, .bezel_g = .3, .bezel_b = .3,
+      .label_font = "Sans", .label_y = .36, .label_size = .13 },
     { "botta",      "Mario Botta's SF MoMA design",
       1.0, 0.98, 0.98, FALSE, TRUE,  TRUE,  1000,
-      botta_children,      G_N_ELEMENTS(botta_children)      },
+      FACE_CHILDREN(botta_children),
+      .bezel_w = .099, .bezel_r = .5, .bezel_g = .5, .bezel_b = .5,
+      .label_font = "Sans", .label_y = .30, .label_size = .11,
+      .label_r = .3, .label_g = .3, .label_b = .3 },
     { "fancy",      "stylised outlined hands on black",
       0.0, 0.0,  0.0,  FALSE, TRUE,  TRUE,  1000,
-      fancy_children,      G_N_ELEMENTS(fancy_children)      },
+      FACE_CHILDREN(fancy_children),
+      .label_font = "Serif Italic", .label_y = .33, .label_size = .12,
+      .label_r = 1, .label_g = 1, .label_b = 1 },
     { "swissclock", "arrow hands, railroad mode",
       1.0, 0.98, 0.98, TRUE,  TRUE,  TRUE,  60,
-      swissclock_children, G_N_ELEMENTS(swissclock_children) },
+      FACE_CHILDREN(swissclock_children),
+      .bezel_w = .03,
+      .label_font = "Sans Bold", .label_y = .36, .label_size = .12 },
     { "oclock",     "MIT oclock emulation, no second hand",
       1.0, 0.98, 0.98, FALSE, TRUE,  TRUE,  60000,
-      oclock_children,     G_N_ELEMENTS(oclock_children)     },
+      FACE_CHILDREN(oclock_children),
+      .bezel_w = .1,
+      .label_font = "Serif Italic", .label_y = .36, .label_size = .14 },
 };
+#undef FACE_CHILDREN
 #define N_FACES ((int) G_N_ELEMENTS(faces))
 
 /* Returns index into faces[], or -1 if not found */
@@ -585,6 +713,41 @@ apply_face(AppState *state, int idx)
     state->n_children = face->n_children;
     state->children   = g_memdup2(face->children,
                                    face->n_children * sizeof(Child));
+
+    state->bezel_w    = face->bezel_w;
+    state->bezel_r    = face->bezel_r;
+    state->bezel_g    = face->bezel_g;
+    state->bezel_b    = face->bezel_b;
+    state->label_font = face->label_font;
+    state->label_y    = face->label_y;
+    state->label_size = face->label_size;
+    state->label_r    = face->label_r;
+    state->label_g    = face->label_g;
+    state->label_b    = face->label_b;
+
+    /* Reach of the outermost mark, and the clear area inside the ring of
+     * minute/hour marks (sparser marks, like Botta's spokes, are ignored) */
+    double reach = 0.0, clear = 1.0;
+    for (int i = 0; i < face->n_children; i++) {
+        const Child *c = &face->children[i];
+        if (c->type != CHILD_MARK) continue;
+        double out = c->outer;
+        if (c->shape == SHAPE_CIRCLE)
+            out += c->width / 2 + (c->render == RENDER_OUTLINE ? c->stroke_width_r / 2 : 0);
+        reach = MAX(reach, out);
+        if (c->cycle >= 12)
+            clear = MIN(clear, c->inner);
+    }
+
+    /* Shrink the dial so the marks clear the inner edge of the bezel by
+     * a small gap; the bezel shrinks along with the hour marks it matches */
+    const double gap = 0.02;
+    state->dial_scale = 1.0;
+    if (face->bezel_w > 0)
+        state->dial_scale = MIN(1.0, (1.0 - gap) / (reach + face->bezel_w));
+    if (face->bezel_w > 0)
+        clear = MIN(clear, 1.0 / state->dial_scale - face->bezel_w);
+    state->label_clear_r = clear;
 }
 
 /* --- Command-line option storage --- */
@@ -627,6 +790,7 @@ static gboolean opt_nofullscreen = FALSE;
 static gboolean opt_version      = FALSE;
 static gdouble  opt_tick         = 0.0;
 static gchar   *opt_name         = NULL;
+static gchar   *opt_tz           = NULL;
 
 static int
 on_handle_local_options(GApplication *app, GVariantDict *options, gpointer user_data)
@@ -686,6 +850,16 @@ on_handle_local_options(GApplication *app, GVariantDict *options, gpointer user_
     if (opt_nofullscreen)
         state->is_fullscreen = FALSE;
 
+    if (opt_tz) {
+        state->tz = g_time_zone_new_identifier(opt_tz);
+        if (!state->tz) {
+            g_printerr("%s: unknown time zone '%s'\n", PACKAGE_NAME, opt_tz);
+            return 1;
+        }
+        /* America/New_York -> America/New York */
+        state->label = g_strdelimit(g_strdup(opt_tz), "_", ' ');
+    }
+
     if (opt_tick > 0.0) {
         state->tick_ms = (int)(opt_tick * 1000.0);
         if (state->tick_ms < 16) state->tick_ms = 16;
@@ -738,6 +912,8 @@ main(int argc, char *argv[])
           "Start in fullscreen mode", NULL },
         { "nofullscreen",0, 0,                    G_OPTION_ARG_NONE,   &opt_nofullscreen,
           "Start in normal (non-fullscreen) mode (default)", NULL },
+        { "tz",         0,  0,                    G_OPTION_ARG_STRING, &opt_tz,
+          "Show the time in time zone TZ, and label the face with it", "TZ" },
         { "tick",       0,  0,                    G_OPTION_ARG_DOUBLE,  &opt_tick,
           "Update interval in seconds", "SECONDS" },
         { "version",   'V', 0,                    G_OPTION_ARG_NONE,   &opt_version,
@@ -758,5 +934,8 @@ main(int argc, char *argv[])
     g_object_unref(app);
     g_free(name_desc);
     g_free(state.children);
+    g_free(state.label);
+    if (state.tz)
+        g_time_zone_unref(state.tz);
     return status;
 }

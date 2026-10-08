@@ -34,6 +34,19 @@ In
 .B --norailroad
 mode the default is 1\~second since no sub-second motion occurs.
 
+The
+.B --tz
+option shows the time in another time zone, given as an IANA zone name
+such as
+.B Europe/Zurich
+or
+.BR America/New_York ,
+or as a UTC offset such as
+.BR +05:30 .
+The zone name is written on the clock face, above the centre and
+beneath the hands, with underscores shown as spaces; it is shrunk, and
+if necessary broken after its last slash, to fit inside the marks.
+
 Transparency in shaped mode requires a compositing window manager.
 On desktops without compositing the transparent regions appear black.
 
@@ -89,6 +102,11 @@ Smooth second hand (non-railroad mode) in a decorated window:
 Elliptical face (stretches to fill the window aspect ratio):
 .RS
 .B swisswatch --nocircular --noshape
+.RE
+
+Two clocks, for here and for Tokyo:
+.RS
+.B swisswatch & swisswatch --tz=Asia/Tokyo &
 .RE
 
 [SEE ALSO]

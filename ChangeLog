@@ -1,4 +1,24 @@
-2026-10-08  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+2026-10-08  Barak A. Pearlmutter  <barak@pearlmutter.net>
+
+	* swisswatch.c: add --tz=ZONE option, after buici-clock.  The time is
+	taken from a GTimeZone for ZONE, and the zone name is drawn on the
+	face above the centre, beneath the hands (draw_label, label_fit).
+	The label is shrunk to stay inside the marks, broken after its last
+	'/' when that lets it be larger, and haloed in the face colour so
+	marks it crosses are knocked out.  Each face sets its own label font,
+	colour, size and position.  The window title includes the zone.
+	(update_time): use the GTimeZone offset when --tz is given.
+
+	* swisswatch.c: draw the bezel from new FaceConfig fields instead of
+	as a circle mark, with the same stroke width as the hour marks (as
+	in buici-clock), wholly inside the face so a shaped window no longer
+	clips half of it.  apply_face shrinks the dial contents (dial_scale)
+	so the marks clear the bezel.  Thicken the swisswatch bezel to match
+	its hour marks, and darken it.
+
+	* swisswatch.h2m, README.md: document --tz.
+
+2026-10-08  Barak A. Pearlmutter  <barak@pearlmutter.net>
 
 	* configure.ac (AC_INIT): version 0.7.2; add bug-report and home
 	page URLs pointing to https://github.com/barak/swisswatch.
@@ -24,7 +44,7 @@
 	(ACLOCAL_AMFLAGS): remove; there is no m4 directory.
 	(EXTRA_DIST): add LICENSE.
 
-2026-05-30  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+2026-05-30  Barak A. Pearlmutter  <barak@pearlmutter.net>
 
 	* org.debian.swisswatch.desktop: rename from swisswatch.desktop so
 	GNOME Shell can match the running app (whose GtkApplication ID is
@@ -33,7 +53,7 @@
 
 	* Makefile.am (dist_desktop_DATA): reference renamed desktop file.
 
-2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+2026-05-21  Barak A. Pearlmutter  <barak@pearlmutter.net>
 
 	* swisswatch.c (cycle_face): new function; n/N key cycles through all
 	clock faces in order.  Syncs window decoration when shaped state
@@ -52,7 +72,7 @@
 
 	* README.md: add clock-faces table.
 
-2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+2026-05-21  Barak A. Pearlmutter  <barak@pearlmutter.net>
 
 	* swisswatch.svg, swisswatch.gresource.xml: new files; SVG icon drawn
 	with authentic SBB clock proportions, embedded in the binary via
@@ -73,7 +93,7 @@
 	add r/R (railroad), s/S (shaped), c/C (circular) keyboard toggles;
 	add --nocircular option.
 
-2026-05-21  Barak A. Pearlmutter  <barak.pearlmutter@gmail.com>
+2026-05-21  Barak A. Pearlmutter  <barak@pearlmutter.net>
 
 	* README.md: rewrite for GTK4 port; rename from README.
 
