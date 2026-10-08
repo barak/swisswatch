@@ -1,36 +1,52 @@
-This is the Debian GNU/Linux prepackaged version of swisswatch.
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: swisswatch
+Upstream-Contact: Barak A. Pearlmutter <barak.pearlmutter@gmail.com>
+Source: https://github.com/barak/swisswatch
+Comment:
+ Swisswatch was written by Simon Leinen at EPFL in 1992 as an X Toolkit
+ reimplementation of der Mouse's mclock, and first packaged for Debian
+ by Karl Sackett in 1997.  As of version 0.7 (2026) it has been ported
+ from X11/Xt to GTK4/Cairo and is maintained upstream by Barak A.
+ Pearlmutter at https://github.com/barak/swisswatch.
 
-This package was put together by Karl Sackett <krs@debian.org>,
-from sources obtained from:
+Files: *
+Copyright: 1989 Massachusetts Institute of Technology
+           1989 X Consortium
+           1992-1993 Simon Leinen
+           2005 DJ Clark <swisswatch@djclark.co.uk>
+           2026 Barak A. Pearlmutter <barak.pearlmutter@gmail.com>
+License: X11
 
-	ftp://ftp.x.org/R5contrib/swisswatch-0.06.tar.Z
+Files: debian/*
+Copyright: 1997 Karl Sackett <krs@debian.org>
+           1997-1998 Rob Browning <rlb@cs.utexas.edu>
+           1998 Justin Maurer <justin@debian.org>
+           2001 Branden Robinson <branden@debian.org>
+           2003-2011 Roland Stigge <stigge@antcom.de>
+           2016-2026 Barak A. Pearlmutter <bap@debian.org>
+License: X11
 
-License:
-
-  Copyright (C) 1989 X Consortium
-
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal in the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject to
-  the following conditions:
-
-  The above copyright notice and this permission notice shall be
-  included in all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-  IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
-  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-  OTHER DEALINGS IN THE SOFTWARE.
-
-  Except as contained in this notice, the name of the X Consortium shall
-  not be used in advertising or otherwise to promote the sale, use or
-  other dealings in this Software without prior written authorization
-  from the X Consortium.
-
-  X Window System is a trademark of X Consortium, Inc.
+License: X11
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+ .
+ Except as contained in this notice, the name of the X Consortium shall
+ not be used in advertising or otherwise to promote the sale, use or
+ other dealings in this Software without prior written authorization
+ from the X Consortium.

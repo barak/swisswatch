@@ -1,13 +1,26 @@
 Source: swisswatch
 Section: x11
 Maintainer: Barak A. Pearlmutter <bap@debian.org>
-Build-Depends: debhelper-compat (= 13), libgtk-4-dev, autoconf-archive, help2man
+Build-Depends: debhelper-compat (= 14),
+               dh-sequence-single-binary,
+               autoconf-archive,
+               help2man,
+               libglib2.0-dev-bin,
+               libgtk-4-dev,
 Standards-Version: 4.7.4
+Homepage: https://github.com/barak/swisswatch
 Vcs-Git: https://salsa.debian.org/debian/swisswatch.git
 Vcs-Browser: https://salsa.debian.org/debian/swisswatch
 
 Package: swisswatch
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Swiss Railway Clock
- Swisswatch clock for GTK4, in the style of a Swiss Railway Clock.
+ Analog clock for GTK4 in the style of the iconic Swiss Railway
+ (SBB/CFF/FFS) clock face designed by Hans Hilfiker, including the
+ characteristic "railroad" motion: the red second hand sweeps the dial
+ in about 58 seconds, pauses at 12, and the minute hand then jumps.
+ .
+ By default it appears as a borderless circular window floating on the
+ desktop.  Several other faces are available, including Mario Botta's
+ design and an emulation of the classic oclock.  Works under both
+ Wayland and X11.

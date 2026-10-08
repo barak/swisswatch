@@ -1,3 +1,17 @@
+swisswatch (0.7.2-1) unstable; urgency=medium
+
+  * New upstream version, now maintained at
+    https://github.com/barak/swisswatch
+  * Bump debhelper from 13 to 14.
+  * Drop now-implicit ${misc:Depends} and ${shlibs:Depends}.
+  * Explicitly enable dh single-binary addon.
+  * Build-depend on libglib2.0-dev-bin for glib-compile-resources.
+  * Add Homepage and debian/upstream/metadata for new upstream locus.
+  * Convert debian/copyright to machine-readable DEP-5 format.
+  * Expand package description.
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 08 Oct 2026 12:42:47 +0100
+
 swisswatch (0.7.1-2) unstable; urgency=medium
 
   * Track upstream for Wayland icon fix
