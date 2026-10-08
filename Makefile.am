@@ -1,5 +1,3 @@
-ACLOCAL_AMFLAGS = -I m4
-
 bin_PROGRAMS = swisswatch
 
 swisswatch_SOURCES = swisswatch.c swisswatch_resources.c
@@ -25,14 +23,17 @@ man_MANS = swisswatch.1
 CLEANFILES = swisswatch.1 swisswatch_resources.c
 
 desktopdir = $(datadir)/applications
-dist_desktop_DATA = org.debian.swisswatch.desktop
+dist_desktop_DATA = io.github.barak.swisswatch.desktop
 
 iconsdir = $(datadir)/icons/hicolor/scalable/apps
 dist_icons_DATA = swisswatch.svg
 
 install-data-hook:
-	gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor || :
+	test -n "$(DESTDIR)" || $(GTK_UPDATE_ICON_CACHE) -f -t $(datadir)/icons/hicolor || :
 
-EXTRA_DIST = swisswatch.h2m swisswatch.gresource.xml
+# Do not leave a shared icon cache behind in the distcheck prefix.
+AM_DISTCHECK_CONFIGURE_FLAGS = GTK_UPDATE_ICON_CACHE=true
+
+EXTRA_DIST = swisswatch.h2m swisswatch.gresource.xml LICENSE
 
 doc_DATA = README.md ChangeLog

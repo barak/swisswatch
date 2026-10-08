@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([swisswatch],[0.7])
+AC_INIT([swisswatch],[0.7.2],[https://github.com/barak/swisswatch/issues],[swisswatch],[https://github.com/barak/swisswatch])
 AM_INIT_AUTOMAKE([foreign -Wall])
 AC_CONFIG_SRCDIR([swisswatch.c])
 AC_CONFIG_HEADERS([config.h])
@@ -25,6 +25,9 @@ AM_MISSING_PROG([HELP2MAN], [help2man])
 AC_PATH_PROG([GLIB_COMPILE_RESOURCES], [glib-compile-resources])
 AS_IF([test -z "$GLIB_COMPILE_RESOURCES"],
     [AC_MSG_ERROR([glib-compile-resources not found; install libglib2.0-dev])])
+
+AC_ARG_VAR([GTK_UPDATE_ICON_CACHE], [icon cache updater run on install])
+AC_CHECK_PROGS([GTK_UPDATE_ICON_CACHE], [gtk-update-icon-cache], [true])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

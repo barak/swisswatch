@@ -350,7 +350,7 @@ on_activate(GtkApplication *app, gpointer user_data)
     /* Register the embedded SVG so gtk_window_set_icon_name works before install */
     gtk_icon_theme_add_resource_path(
         gtk_icon_theme_get_for_display(gdk_display_get_default()),
-        "/org/debian/swisswatch/icons");
+        "/io/github/barak/swisswatch/icons");
 
     state->window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(state->window), "SwissWatch");
@@ -636,8 +636,12 @@ on_handle_local_options(GApplication *app, GVariantDict *options, gpointer user_
 
     if (opt_version) {
         g_print("%s %s\n"
+                "Copyright (C) 1989 Massachusetts Institute of Technology\n"
                 "Copyright (C) 1992 Simon Leinen\n"
-                "License GPLv2+: GNU General Public License v2 or later.\n",
+                "Copyright (C) 2026 Barak A. Pearlmutter\n"
+                "License X11: <https://spdx.org/licenses/X11.html>\n"
+                "This is free software: you are free to change and redistribute it.\n"
+                "There is NO WARRANTY, to the extent permitted by law.\n",
                 PACKAGE_NAME, PACKAGE_VERSION);
         return 0;
     }
@@ -741,7 +745,7 @@ main(int argc, char *argv[])
         { NULL }
     };
 
-    GtkApplication *app = gtk_application_new("org.debian.swisswatch",
+    GtkApplication *app = gtk_application_new("io.github.barak.swisswatch",
                                                G_APPLICATION_NON_UNIQUE);
     g_application_set_option_context_description(G_APPLICATION(app), footer_str);
     g_free(footer_str);
