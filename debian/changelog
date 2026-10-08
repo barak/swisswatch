@@ -1,3 +1,9 @@
+swisswatch (0.7.3-1) unstable; urgency=medium
+
+  * New upstream version with option --tz=
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 08 Oct 2026 15:14:39 +0100
+
 swisswatch (0.7.2-1) unstable; urgency=medium
 
   * New upstream version, now maintained at
